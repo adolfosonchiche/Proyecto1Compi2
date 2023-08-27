@@ -1,0 +1,420 @@
+package com.adolfosc.analizadores.valexpresion;
+
+import java_cup.runtime.*;
+import java.util.ArrayList;
+import java.util.List;
+import com.adolfosc.analizadores.ErrorSintaxis;
+import com.adolfosc.modelo.valexpresion.ExprVal;
+import java.util.Stack;
+import java.util.Arrays;
+
+parser code {:
+
+    private List<ErrorSintaxis> erroresCom; 
+    private ExprVal expresionResp;
+	public ValExprParser(ValExprLexer lex) {
+		super(lex);        
+        this.erroresCom = lex.getErroresCom();
+	}
+
+    /**
+     * Método al que se llama automáticamente ante algún error sintactico.
+     **/ 
+    public void syntax_error(Symbol s){ 
+        erroresCom.add(new ErrorSintaxis("Sintactico","No se esperaba Componente",String.valueOf(s.left),String.valueOf(s.right),String.valueOf(s.value)));
+    }
+
+    /**
+     * Método al que se llama automáticamente ante algún error sintáctico 
+     * en el que ya no es posible una recuperación de errores.
+     **/ 
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{ 
+        erroresCom.add(new ErrorSintaxis("Sintactico","Error sintactico Irrecuperable",String.valueOf(s.left),String.valueOf(s.right),String.valueOf(s.value)));
+    }         
+    /*---------Getters & Setters---------*/
+
+    public List<ErrorSintaxis> getErroresCom(){
+        return this.erroresCom;
+    }    
+
+    private ExprVal crearExpresion(String tipo, String val){
+        ExprVal expresion = new ExprVal(tipo,val);
+        return expresion;
+    }
+
+    private ExprVal elevar(ExprVal val1,ExprVal val2){
+        Double dobVal1 = Double.parseDouble(val1.getVal());
+        Double dobVal2 = Double.parseDouble(val2.getVal());
+        Double valor = Math.pow(dobVal1, dobVal2);
+        ExprVal expresionDev = new ExprVal("numero",String.valueOf(valor));     
+        return expresionDev;
+    }
+
+    private ExprVal obtenerMod(ExprVal val1,ExprVal val2){
+        int intVal1 = parseStringToInt(val1.getVal());
+        int intVal2 = parseStringToInt(val2.getVal());
+        int valor = intVal1 % intVal2;
+        ExprVal expresionDev = new ExprVal("numero",String.valueOf(valor));     
+        return expresionDev;
+    }
+
+    private ExprVal multiplicar(ExprVal val1,ExprVal val2){
+        if(val1.getTipo().equals("boolean") && val2.getTipo().equals("boolean")){
+            String valor1 = val1.getVal();
+            String valor2 = val2.getVal();
+            if(valor1.equalsIgnoreCase("verdadero")||valor1.equalsIgnoreCase("true")){
+                if(valor1.equalsIgnoreCase("verdadero")||valor1.equalsIgnoreCase("true")){
+                    ExprVal expresionDev = new ExprVal("boolean","true");
+                    return expresionDev;
+                }else{
+                    ExprVal expresionDev = new ExprVal("boolean","false");
+                    return expresionDev;
+                }
+            }else{
+                ExprVal expresionDev = new ExprVal("boolean","false");
+                return expresionDev;
+            }
+        }else{
+            Double dobVal1 = Double.parseDouble(val1.getVal());
+            Double dobVal2 = Double.parseDouble(val2.getVal());
+            Double valor = dobVal1 * dobVal2;
+            ExprVal expresionDev = new ExprVal("numero",String.valueOf(valor));     
+            return expresionDev;
+        }
+    }
+
+    private ExprVal dividir(ExprVal val1,ExprVal val2){
+        Double dobVal1 = Double.parseDouble(val1.getVal());
+        Double dobVal2 = Double.parseDouble(val2.getVal());
+        Double valor = dobVal1 / dobVal2;
+        ExprVal expresionDev = new ExprVal("numero",String.valueOf(valor));     
+        return expresionDev;
+    }
+
+    private ExprVal sumar(ExprVal val1,ExprVal val2){
+        String tipo1 = val1.getTipo();
+        String tipo2 = val2.getTipo();
+        if(tipo1.equals("cadena")||tipo2.equals("cadena")){
+            String strVal1 = val1.getVal().replace("\"", "");
+            String strVal2 = val2.getVal().replace("\"", "");
+            strVal1 = strVal1.replace("#n", "\n");
+            strVal2 = strVal2.replace("#n", "\n");
+            String valor = strVal1 + strVal2;
+            ExprVal expresionDev = new ExprVal("cadena",String.valueOf(valor));     
+            return expresionDev;
+        }else if(tipo1.equals("boolean")&&tipo2.equals("boolean")){
+            String strVal1 = val1.getVal();
+            String strVal2 = val2.getVal();
+            String valor = "";
+            if(strVal1.equalsIgnoreCase("falso")||strVal1.equalsIgnoreCase("false")){
+                if(strVal2.equalsIgnoreCase("falso")||strVal2.equalsIgnoreCase("false")){
+                    valor = "false";
+                }else{
+                    valor = "true";
+                }
+            }else{
+                valor = "true";
+            }
+            ExprVal expresionDev = new ExprVal("boolean",String.valueOf(valor));     
+            return expresionDev;
+        }else{
+            Double dobVal1 = Double.parseDouble(val1.getVal());
+            Double dobVal2 = Double.parseDouble(val2.getVal());
+            Double valor = dobVal1 + dobVal2;
+            ExprVal expresionDev = new ExprVal("numero",String.valueOf(valor));     
+            return expresionDev;
+        }
+    }
+
+    private ExprVal restar(ExprVal val1,ExprVal val2){        
+        Double dobVal1 = Double.parseDouble(val1.getVal());
+        Double dobVal2 = Double.parseDouble(val2.getVal());
+        Double valor = dobVal1 - dobVal2;
+        ExprVal expresionDev = new ExprVal("numero",String.valueOf(valor));     
+        return expresionDev;
+    }
+
+    private ExprVal validarNulo(ExprVal val){
+        String valorR = "";
+        String valor = val.getVal();
+        if(valor.equalsIgnoreCase("nulo")){
+            valorR = "true";
+        }else{
+            valorR = "false";
+        }
+        ExprVal expresionDev = new ExprVal("boolean",valorR);  
+        return expresionDev;
+    }
+
+    private ExprVal validarMayMenIg(ExprVal val1,ExprVal val2, String tipo){
+        Double dobVal1 = Double.parseDouble(val1.getVal());
+        Double dobVal2 = Double.parseDouble(val2.getVal());
+        String valor = "";
+        switch(tipo){
+            case ">=":
+                if(dobVal1 >= dobVal2){
+                    valor = "true";
+                }else{
+                    valor = "false";
+                }
+                break;
+            case "<=":
+                if(dobVal1 <= dobVal2){
+                    valor = "true";
+                }else{
+                    valor = "false";
+                }
+                break;
+            case ">":
+                if(dobVal1 > dobVal2){
+                    valor = "true";
+                }else{
+                    valor = "false";
+                }
+                break;
+            case "<":
+                if(dobVal1 < dobVal2){
+                    valor = "true";
+                }else{
+                    valor = "false";
+                }
+                break;            
+        }
+        ExprVal expresionDev = new ExprVal("boolean",valor);  
+        return expresionDev;
+    }
+
+    private ExprVal validarDobIg(ExprVal val1,ExprVal val2, String tipo){
+        String dobVal1 = val1.getVal();
+        String dobVal2 = val2.getVal();
+        
+        if(val1.getTipo().equals("numero")){
+            Double v1 = Double.parseDouble(val1.getVal());
+            dobVal1 = String.valueOf(v1);            
+        }
+        if(val2.getTipo().equals("numero")){
+            Double v2 = Double.parseDouble(val2.getVal());
+            dobVal2 = String.valueOf(v2);            
+        }
+
+        String valor = "";
+        switch(tipo){
+            case "==":
+                if(dobVal1.equals(dobVal2)){
+                    valor = "true";
+                }else{
+                    valor = "false";
+                }
+                break;
+            case "!=":
+                if(dobVal1.equals(dobVal2) == false){
+                    valor = "true";
+                }else{
+                    valor = "false";
+                }
+                break;            
+        }
+        ExprVal expresionDev = new ExprVal("boolean",valor);  
+        return expresionDev;
+    }
+
+    private ExprVal validarNot(ExprVal val){
+        String valor = "true";
+        if(val.getVal().equalsIgnoreCase("true")||val.getVal().equalsIgnoreCase("verdadero")){
+            valor = "false";
+        }
+        ExprVal expresionDev = new ExprVal("boolean",valor);  
+        return expresionDev;
+    }
+
+    private ExprVal validarAND(ExprVal val1,ExprVal val2){
+        String valor1 = val1.getVal();
+        String valor2 = val2.getVal();
+        String valor = "";
+        if(valor1.equalsIgnoreCase("true") || valor1.equalsIgnoreCase("verdadero")){
+            if(valor2.equalsIgnoreCase("true") || valor2.equalsIgnoreCase("verdadero")){
+                valor = "true";
+            }else{
+                valor = "false";
+            }
+        }else{
+            valor = "false";
+        }
+        ExprVal expresionDev = new ExprVal("boolean",valor);  
+        return expresionDev;
+    }
+
+    private ExprVal validarNAND(ExprVal val1,ExprVal val2){
+        String valor1 = val1.getVal();
+        String valor2 = val2.getVal();
+        String valor = "";
+        if(valor1.equalsIgnoreCase("true") || valor1.equalsIgnoreCase("verdadero")){
+            if(valor2.equalsIgnoreCase("true") || valor2.equalsIgnoreCase("verdadero")){
+                valor = "false";
+            }else{
+                valor = "true";
+            }
+        }else{
+            valor = "true";
+        }
+        ExprVal expresionDev = new ExprVal("boolean",valor);  
+        return expresionDev;
+    }
+
+    private ExprVal validarOR(ExprVal val1,ExprVal val2){
+        String valor1 = val1.getVal();
+        String valor2 = val2.getVal();
+        String valor = "";
+        if(valor1.equalsIgnoreCase("false") || valor1.equalsIgnoreCase("falso")){
+            if(valor2.equalsIgnoreCase("false") || valor2.equalsIgnoreCase("falso")){
+                valor = "false";
+            }else{
+                valor = "true";
+            }
+        }else{
+            valor = "true";
+        }
+        ExprVal expresionDev = new ExprVal("boolean",valor);  
+        return expresionDev;
+    }
+
+    private ExprVal validarNOR(ExprVal val1,ExprVal val2){
+        String valor1 = val1.getVal();
+        String valor2 = val2.getVal();
+        String valor = "";
+        if(valor1.equalsIgnoreCase("false") || valor1.equalsIgnoreCase("falso")){
+            if(valor2.equalsIgnoreCase("false") || valor2.equalsIgnoreCase("falso")){
+                valor = "true";
+            }else{
+                valor = "false";
+            }
+        }else{
+            valor = "false";
+        }
+        ExprVal expresionDev = new ExprVal("boolean",valor);  
+        return expresionDev;
+    }
+
+    private ExprVal validarXOR(ExprVal val1,ExprVal val2){
+        String valor1 = val1.getVal();
+        String valor2 = val2.getVal();
+        String valor = "";
+        if(valor1.equalsIgnoreCase("true") || valor1.equalsIgnoreCase("verdadero")){
+            if(valor2.equalsIgnoreCase("true") || valor2.equalsIgnoreCase("verdadero")){
+                valor = "false";
+            }else{
+                valor = "true";
+            }
+        }else{
+            if(valor2.equalsIgnoreCase("true") || valor2.equalsIgnoreCase("verdadero")){
+                valor = "true";
+            }else{
+                valor = "false";
+            }            
+        }
+        ExprVal expresionDev = new ExprVal("boolean",valor);  
+        return expresionDev;
+    }
+
+    private int parseStringToInt(String val){
+        int valR = 0;
+        Double valD = Double.parseDouble(val);
+        valR = (int)Math.round(valD);
+        return valR;
+    }
+
+    private void insertarExprValResp(ExprVal val){
+        this.expresionResp = val;
+    }
+
+    public ExprVal getExpresionResp(){
+        return this.expresionResp;
+    }
+
+:}
+
+/* Terminals (tokens returned by the scanner). */
+terminal        OPINCR,OPDECR,SUMA,RESTA,MULT,DIVI,OPMOD,OPELV,DOBIGUAL,DIFERENC,MAYIG,MENIG,OPNULO,MAY,MEN;
+terminal        NAND,NOR,XOR,AND,OR,OPNOT,PARI,PARD,BRACKI,BRACKD,CURLBRACKI,CURLBRACKD,DOSPUNT,PUNTCOMA,COMA,IGUAL;
+
+terminal String CADENA,CARACTER,NUMERO,VERDADERO,FALSO,NULO;
+
+
+
+/* Non-Terminals (created scanner). */
+non terminal  inicio,expr,term,fact,elem,rel,rel2,log1,log2,log3;
+
+
+
+/* The grammar : */
+
+start with inicio;
+
+inicio::=
+        log1:val {:insertarExprValResp((ExprVal)val);:} 
+;
+
+
+log1 ::=
+        log2:val1 OR log1:val2 {:RESULT = validarOR((ExprVal)val1,(ExprVal)val2);:}
+    |   log2:val1 NOR log1:val2 {:RESULT = validarNOR((ExprVal)val1,(ExprVal)val2);:}
+    |   log2:val1 XOR log1:val2 {:RESULT = validarXOR((ExprVal)val1,(ExprVal)val2);:}
+    |   log2:val {:RESULT = val;:} 
+;
+
+log2 ::=
+        log3:val1 AND log2:val2 {:RESULT = validarAND((ExprVal)val1,(ExprVal)val2);:}
+    |   log3:val1 NAND log2:val2 {:RESULT = validarNAND((ExprVal)val1,(ExprVal)val2);:}
+    |   log3:val {:RESULT = val;:} 
+;
+
+log3 ::=
+        OPNOT rel:val {:RESULT = validarNot((ExprVal)val);:}
+    |   rel:val {:RESULT = val;:} 
+;
+
+rel ::=
+        rel2:val1 DOBIGUAL rel:val2 {:RESULT = validarDobIg((ExprVal)val1,(ExprVal)val2,"==");:} 
+    |   rel2:val1 DIFERENC rel:val2 {:RESULT = validarDobIg((ExprVal)val1,(ExprVal)val2,"!=");:} 
+    |   rel2:val1 MAY rel:val2      {:RESULT = validarMayMenIg((ExprVal)val1,(ExprVal)val2,">");:} 
+    |   rel2:val1 MEN rel:val2      {:RESULT = validarMayMenIg((ExprVal)val1,(ExprVal)val2,"<");:} 
+    |   rel2:val1 MAYIG rel:val2    {:RESULT = validarMayMenIg((ExprVal)val1,(ExprVal)val2,">=");:} 
+    |   rel2:val1 MENIG rel:val2    {:RESULT = validarMayMenIg((ExprVal)val1,(ExprVal)val2,"<=");:}   
+    |   rel2:val {:RESULT = val;:} 
+;
+
+rel2 ::=
+        OPNULO expr:val {:RESULT = validarNulo((ExprVal)val);:}
+    |   expr:val {:RESULT = val;:} 
+;
+
+
+expr ::= 
+        expr:val1 SUMA term:val2 {:RESULT = sumar((ExprVal)val1,(ExprVal)val2);:}
+    |   expr:val1 RESTA term:val2 {:RESULT = restar((ExprVal)val1,(ExprVal)val2);:}
+    |   term:val {:RESULT = val;:} 
+;
+
+term ::=
+        term:val1 MULT fact:val2 {:RESULT = multiplicar((ExprVal)val1,(ExprVal)val2);:}
+    |   term:val1 DIVI fact:val2 {:RESULT = dividir((ExprVal)val1,(ExprVal)val2);:}
+    |   term:val1 OPMOD fact:val2 {:RESULT = obtenerMod((ExprVal)val1,(ExprVal)val2);:}
+    |   fact:val {:RESULT = val;:} 
+;   
+
+fact ::=
+        elem:val1 OPELV fact:val2 {:RESULT = elevar((ExprVal)val1,(ExprVal)val2);:}
+    |   elem:val {:RESULT = val;:}
+;
+
+elem ::=
+        CADENA:val {:RESULT = crearExpresion("cadena",val);:}
+    |   CARACTER:val {:RESULT = crearExpresion("caracter",val);:}
+    |   NUMERO:val {:RESULT = crearExpresion("numero",val);:}
+    |   VERDADERO:val {:RESULT = crearExpresion("boolean",val);:}
+    |   FALSO:val {:RESULT = crearExpresion("boolean",val);:}
+    |   NULO:val  {:RESULT = crearExpresion("nulo","nulo");:} 
+    |   PARI log1:val PARD {:RESULT = val;:}
+;
+
+
