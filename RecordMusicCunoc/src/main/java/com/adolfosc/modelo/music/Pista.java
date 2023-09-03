@@ -1,4 +1,5 @@
 package com.adolfosc.modelo.music;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -6,7 +7,7 @@ import java.util.List;
  *
  * @author hectoradolfo
  */
-public class Pista {
+public class Pista implements Serializable {
     
     private String nombre;
     private List<String> extensiones;   

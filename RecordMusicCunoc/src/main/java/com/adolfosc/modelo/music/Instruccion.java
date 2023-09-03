@@ -1,10 +1,12 @@
 package com.adolfosc.modelo.music;
 
+import java.io.Serializable;
+
 /**
  *
  * @author hectoradolfo
  */
-public class Instruccion {
+public class Instruccion implements Serializable {
     
     private String tipoInstruccion;
     private int identacion;      

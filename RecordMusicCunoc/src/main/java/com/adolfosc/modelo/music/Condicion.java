@@ -1,12 +1,13 @@
 package com.adolfosc.modelo.music;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  *
  * @author hectoradolfo
  */
-public class Condicion {
+public class Condicion implements Serializable {
     
     private boolean nuloExpr1;
     private boolean nuloExpr2;

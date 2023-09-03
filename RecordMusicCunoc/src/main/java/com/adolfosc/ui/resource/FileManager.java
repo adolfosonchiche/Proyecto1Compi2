@@ -11,6 +11,7 @@ import javax.swing.JFileChooser;
 import static javax.swing.JFileChooser.APPROVE_OPTION;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
@@ -28,7 +29,7 @@ public class FileManager {
      * @param pathActual
      * @param txtAreaCode
      */
-    public void openFile(JFileChooser fileChooser, String pathActual, JTextArea txtAreaCode) {
+    public void openFile(JFileChooser fileChooser, String pathActual, JTextPane txtAreaCode) {
         this.nuevoPath = "";
         this.opcion = true;
         try {

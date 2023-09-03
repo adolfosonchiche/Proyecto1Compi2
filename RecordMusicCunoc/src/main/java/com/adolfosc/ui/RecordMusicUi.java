@@ -1,18 +1,30 @@
 package com.adolfosc.ui;
 
+import com.adolfosc.analizadores.ErrorSintaxis;
+import com.adolfosc.analizadores.colorear.ColorearLexer;
 import com.adolfosc.analizadores.compilador.*;
+import com.adolfosc.analizadores.service.CompilarCodigo;
+import com.adolfosc.modelo.music.Lista;
+import com.adolfosc.modelo.music.Nota;
 import com.adolfosc.ui.resource.ActivaProgressBarr;
 import com.adolfosc.ui.resource.FileManager;
 import com.adolfosc.ui.resource.InsetGrafic;
 import com.adolfosc.ui.resource.NumeroLinea;
 import java.awt.Image;
+import java.io.BufferedReader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JTextPane;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Utilities;
 
 /**
  *
@@ -28,6 +40,16 @@ public class RecordMusicUi extends javax.swing.JFrame {
     private String pathActual, pathNuevo;
     private int estadoProgres = 0;
     private ActivaProgressBarr activarPb;
+    
+    private List<Nota> notasPistaRep;
+    private List<String> mensajes;
+    private int durPista;
+    private int caretAct;
+    private boolean pistaIniciada;
+    private boolean codigoCargado;
+    private List<String> pistasEnLista;
+    private Lista lista;
+    private List<ErrorSintaxis>  errores;
 
     /**
      * Creates new form MusicUi
@@ -41,6 +63,10 @@ public class RecordMusicUi extends javax.swing.JFrame {
         this.activarPb = new ActivaProgressBarr(0, 0, 0);
         numLinea = new NumeroLinea(jtpEditPista);
         jScrollPane1.setRowHeaderView(numLinea);
+        this.errores = new ArrayList<>();
+        this.notasPistaRep = new ArrayList<>();
+        this.pistasEnLista = new ArrayList<>();
+        this.mensajes = new ArrayList<>();
 
         numLineaLista = new NumeroLinea(jtpEditLista);
         jScrollPane3.setRowHeaderView(numLineaLista);
@@ -58,6 +84,8 @@ public class RecordMusicUi extends javax.swing.JFrame {
         this.repaint();
 
         insert = new InsetGrafic(jpGrafica);
+        obtenerLineColumnEditor(jtpEditPista, jlbLineaPista, jlbColumnaPista);
+        obtenerLineColumnEditor(jtpEditLista, jlbLineaLista, jlbColumnaLista);
     }
 
     /**
@@ -71,6 +99,23 @@ public class RecordMusicUi extends javax.swing.JFrame {
 
         jtpEditor = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jlbNombreListaSeleccionado = new javax.swing.JLabel();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        jtbeListaPista = new javax.swing.JTable();
+        jScrollPane10 = new javax.swing.JScrollPane();
+        jList2 = new javax.swing.JList<>();
+        jScrollPane11 = new javax.swing.JScrollPane();
+        jList3 = new javax.swing.JList<>();
+        btnReproducirPista = new javax.swing.JButton();
+        btnModificarPista = new javax.swing.JButton();
+        btnEliminarPista = new javax.swing.JButton();
+        btnReproducirLista = new javax.swing.JButton();
+        btnSeleccionarLista = new javax.swing.JButton();
+        btnEliminarLista = new javax.swing.JButton();
+        btnModificarLista = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jtxtOuputPista = new javax.swing.JTextArea();
@@ -79,8 +124,10 @@ public class RecordMusicUi extends javax.swing.JFrame {
         btnCompilarPista = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        jTextPane1 = new javax.swing.JTextPane();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jtpEditPista = new javax.swing.JTextArea();
+        jtpEditPista = new javax.swing.JTextPane();
         jPanel5 = new javax.swing.JPanel();
         jScrollPane5 = new javax.swing.JScrollPane();
         jtxtOuputLista = new javax.swing.JTextArea();
@@ -90,7 +137,7 @@ public class RecordMusicUi extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jtpEditLista = new javax.swing.JTextArea();
+        jtpEditLista = new javax.swing.JTextPane();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         jPanel4 = new javax.swing.JPanel();
         jpGrafica = new javax.swing.JPanel();
@@ -108,15 +155,170 @@ public class RecordMusicUi extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Music Record Compi 2 2021");
 
+        jLabel5.setText("Lista de Pistas");
+
+        jLabel6.setText("Listas de reproducción");
+
+        jLabel7.setText("Pistas en la lista de reproducción");
+
+        jlbNombreListaSeleccionado.setText("  ");
+
+        jtbeListaPista.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null}
+            },
+            new String [] {
+                "Nombre", "Duración"
+            }
+        ));
+        jScrollPane6.setViewportView(jtbeListaPista);
+
+        jScrollPane10.setViewportView(jList2);
+
+        jScrollPane11.setViewportView(jList3);
+
+        btnReproducirPista.setBackground(new java.awt.Color(134, 231, 196));
+        btnReproducirPista.setFont(new java.awt.Font("Ubuntu", 3, 16)); // NOI18N
+        btnReproducirPista.setText("Reproducir");
+        btnReproducirPista.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        btnReproducirPista.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnReproducirPistaActionPerformed(evt);
+            }
+        });
+
+        btnModificarPista.setBackground(new java.awt.Color(134, 231, 196));
+        btnModificarPista.setFont(new java.awt.Font("Ubuntu", 3, 16)); // NOI18N
+        btnModificarPista.setText("Modificar");
+        btnModificarPista.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        btnModificarPista.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnModificarPistaActionPerformed(evt);
+            }
+        });
+
+        btnEliminarPista.setBackground(new java.awt.Color(134, 231, 196));
+        btnEliminarPista.setFont(new java.awt.Font("Ubuntu", 3, 16)); // NOI18N
+        btnEliminarPista.setText("Eliminar");
+        btnEliminarPista.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        btnEliminarPista.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEliminarPistaActionPerformed(evt);
+            }
+        });
+
+        btnReproducirLista.setBackground(new java.awt.Color(134, 231, 196));
+        btnReproducirLista.setFont(new java.awt.Font("Ubuntu", 3, 16)); // NOI18N
+        btnReproducirLista.setText("Reproducir Lista");
+        btnReproducirLista.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        btnReproducirLista.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnReproducirListaActionPerformed(evt);
+            }
+        });
+
+        btnSeleccionarLista.setBackground(new java.awt.Color(134, 231, 196));
+        btnSeleccionarLista.setFont(new java.awt.Font("Ubuntu", 3, 16)); // NOI18N
+        btnSeleccionarLista.setText("Seleccionar");
+        btnSeleccionarLista.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        btnSeleccionarLista.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSeleccionarListaActionPerformed(evt);
+            }
+        });
+
+        btnEliminarLista.setBackground(new java.awt.Color(134, 231, 196));
+        btnEliminarLista.setFont(new java.awt.Font("Ubuntu", 3, 16)); // NOI18N
+        btnEliminarLista.setText("Eliminar");
+        btnEliminarLista.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        btnEliminarLista.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEliminarListaActionPerformed(evt);
+            }
+        });
+
+        btnModificarLista.setBackground(new java.awt.Color(134, 231, 196));
+        btnModificarLista.setFont(new java.awt.Font("Ubuntu", 3, 16)); // NOI18N
+        btnModificarLista.setText("Modificar");
+        btnModificarLista.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        btnModificarLista.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnModificarListaActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 717, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(btnReproducirPista)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnModificarPista)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnEliminarPista))
+                    .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel7)
+                            .addComponent(jlbNombreListaSeleccionado, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnReproducirLista, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(53, 53, 53))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(46, 46, 46)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(btnSeleccionarLista)
+                                .addGap(18, 18, 18)
+                                .addComponent(btnModificarLista)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(btnEliminarLista)
+                                .addGap(62, 62, 62))))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 594, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(jLabel6))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnSeleccionarLista, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnEliminarLista, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnModificarLista, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(36, 36, 36)
+                        .addComponent(jLabel7)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jlbNombreListaSeleccionado)
+                        .addGap(26, 26, 26)
+                        .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addGap(27, 27, 27)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnReproducirPista, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnModificarPista, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnEliminarPista, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnReproducirLista, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(132, Short.MAX_VALUE))
         );
 
         jtpEditor.addTab("Biblioteca", jPanel1);
@@ -144,11 +346,11 @@ public class RecordMusicUi extends javax.swing.JFrame {
 
         jLabel2.setText("Editor Codigo:");
 
-        jtpEditPista.setColumns(20);
-        jtpEditPista.setRows(5);
+        jScrollPane4.setViewportView(jTextPane1);
+
         jtpEditPista.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                jtpEditPistaKeyPressed(evt);
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                jtpEditPistaKeyTyped(evt);
             }
         });
         jScrollPane1.setViewportView(jtpEditPista);
@@ -164,16 +366,19 @@ public class RecordMusicUi extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                         .addGap(128, 128, 128)
                         .addComponent(btnCompilarPista, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 158, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 196, Short.MAX_VALUE)
                         .addComponent(jlbLineaPista, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(jlbColumnaPista, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane1)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -181,18 +386,21 @@ public class RecordMusicUi extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 336, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jlbLineaPista)
-                        .addComponent(jlbColumnaPista))
-                    .addComponent(btnCompilarPista, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(2, 2, 2)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(27, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jlbLineaPista)
+                                .addComponent(jlbColumnaPista))
+                            .addComponent(btnCompilarPista, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(2, 2, 2)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(69, Short.MAX_VALUE))
         );
 
         jtpEditor.addTab("Crear Pista", jPanel2);
@@ -220,11 +428,9 @@ public class RecordMusicUi extends javax.swing.JFrame {
 
         jLabel4.setText("Editor Codigo:");
 
-        jtpEditLista.setColumns(20);
-        jtpEditLista.setRows(5);
         jtpEditLista.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                jtpEditListaKeyPressed(evt);
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                jtpEditListaKeyTyped(evt);
             }
         });
         jScrollPane3.setViewportView(jtpEditLista);
@@ -241,7 +447,7 @@ public class RecordMusicUi extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
                         .addGap(128, 128, 128)
                         .addComponent(btnCompilarLista, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 158, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 196, Short.MAX_VALUE)
                         .addComponent(jlbLineaLista, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(jlbColumnaLista, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -256,9 +462,9 @@ public class RecordMusicUi extends javax.swing.JFrame {
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addComponent(jLabel4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 311, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(31, 31, 31)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jlbLineaLista)
@@ -268,7 +474,7 @@ public class RecordMusicUi extends javax.swing.JFrame {
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(29, Short.MAX_VALUE))
+                .addContainerGap(71, Short.MAX_VALUE))
         );
 
         jtpEditor.addTab("Crear Lista Reproduccion", jPanel5);
@@ -320,9 +526,9 @@ public class RecordMusicUi extends javax.swing.JFrame {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addComponent(jpGrafica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 38, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 69, Short.MAX_VALUE)
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 69, Short.MAX_VALUE)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(btnPlay, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnStop, javax.swing.GroupLayout.DEFAULT_SIZE, 82, Short.MAX_VALUE))
@@ -331,7 +537,7 @@ public class RecordMusicUi extends javax.swing.JFrame {
 
         jTabbedPane2.addTab("Reproductor Musica", jPanel4);
 
-        menuFile.setText("File");
+        menuFile.setText("Archivo");
 
         jmOpenFile.setText("Open File");
         jmOpenFile.addActionListener(new java.awt.event.ActionListener() {
@@ -389,12 +595,18 @@ public class RecordMusicUi extends javax.swing.JFrame {
 
     private void btnCompilarPistaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCompilarPistaActionPerformed
         // TODO add your handling code here:
-        //CompilaCodePista compilar = new CompilaCodePista();
-        //compilar.parsearCodigo(jtpEditPista);
+        this.jtxtOuputPista.setText("");
+        CompilarCodigo compilar = new CompilarCodigo();
+        compilar.compilar(jtpEditPista.getText(), lista, errores, false, this.notasPistaRep,
+                this.mensajes, jtxtOuputPista, false );
     }//GEN-LAST:event_btnCompilarPistaActionPerformed
 
     private void btnCompilarListaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCompilarListaActionPerformed
         // TODO add your handling code here:
+        this.jtxtOuputLista.setText("");
+        CompilarCodigo compilar = new CompilarCodigo();
+        compilar.compilar(jtpEditLista.getText(), lista, errores, false, this.notasPistaRep,
+                this.mensajes, jtxtOuputLista, true );
     }//GEN-LAST:event_btnCompilarListaActionPerformed
 
     private void jmOpenFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmOpenFileActionPerformed
@@ -412,7 +624,7 @@ public class RecordMusicUi extends javax.swing.JFrame {
                 break;
             case 2:
                 JFileChooser fileChooser1 = new JFileChooser();
-                file.openFile(fileChooser1, pathNuevo, jtpEditLista);
+                file.openFile(fileChooser1, pathNuevo, jtpEditPista/*jtpEditLista*/);
                 if (file.isOpcion()) {
                     pathNuevo = file.getNuevoPath();
                     JOptionPane.showMessageDialog(null, "Archivo leido correctamente ",
@@ -510,66 +722,143 @@ public class RecordMusicUi extends javax.swing.JFrame {
         activarPb.setOpcion(0);
     }//GEN-LAST:event_btnStopActionPerformed
 
-    private void jtpEditPistaKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtpEditPistaKeyPressed
-        jtpEditPista.addCaretListener(new CaretListener() {
+    private void jtpEditListaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtpEditListaKeyTyped
+        // TODO add your handling code here:
+        int caretPos = jtpEditLista.getCaretPosition();
+        escanear(jtpEditLista);
+        jtpEditLista.setCaretPosition(caretPos);
+    }//GEN-LAST:event_jtpEditListaKeyTyped
+
+    private void jtpEditPistaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtpEditPistaKeyTyped
+        // TODO add your handling code here:
+        /*jtpEditPista.addCaretListener(new CaretListener() {
             public void caretUpdate(CaretEvent e) {
-                int pos = e.getDot();
+                int posis = e.getDot();
                 try {
-                    int row = jtpEditPista.getLineOfOffset(pos) + 1;
-                    int col = pos - jtpEditPista.getLineStartOffset(row - 1) + 1;
+                    int row = jtpEditPista.getLineOfOffset(posis) + 1;
+                    int col = posis - jtpEditPista.getLineStartOffset(row - 1) + 1;
                     jlbLineaPista.setText("Línea: " + row);
                     jlbColumnaPista.setText(" Columna: " + col);
                 } catch (BadLocationException exc) {
                     System.out.println(exc);
                 }
             }
-        });
-    }//GEN-LAST:event_jtpEditPistaKeyPressed
+        });*/
+        int caretPos = jtpEditPista.getCaretPosition();
+        escanear(jtpEditPista);
+        jtpEditPista.setCaretPosition(caretPos);
+    }//GEN-LAST:event_jtpEditPistaKeyTyped
 
-    private void jtpEditListaKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtpEditListaKeyPressed
-        jtpEditLista.addCaretListener(new CaretListener() {
+    private void btnReproducirPistaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReproducirPistaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnReproducirPistaActionPerformed
+
+    private void btnModificarPistaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnModificarPistaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnModificarPistaActionPerformed
+
+    private void btnEliminarPistaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarPistaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnEliminarPistaActionPerformed
+
+    private void btnReproducirListaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReproducirListaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnReproducirListaActionPerformed
+
+    private void btnSeleccionarListaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSeleccionarListaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnSeleccionarListaActionPerformed
+
+    private void btnEliminarListaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarListaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnEliminarListaActionPerformed
+
+    private void btnModificarListaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnModificarListaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnModificarListaActionPerformed
+
+    
+    private void escanear(JTextPane jTextPane) {
+        try {
+            ColorearLexer lex = new ColorearLexer(new BufferedReader(new StringReader(jTextPane.getText())));
+            lex.pintar.darEstilo(jTextPane.getText());
+            //String txt = lex.pintar.caja2.getDocument().getText(0, lex.pintar.caja2.getDocument().getLength()).toString();
+            //System.out.println(txt);
+            jTextPane.setDocument(lex.pintar.caja2.getDocument());
+            lex.scanear();
+        } catch (Exception e) {
+
+        }
+    }
+    
+    private void obtenerLineColumnEditor(JTextPane jTextPane, JLabel line, JLabel column) {
+        jTextPane.addCaretListener(new CaretListener() {
             public void caretUpdate(CaretEvent e) {
-                int posis = e.getDot();
                 try {
-                    int row = jtpEditLista.getLineOfOffset(posis) + 1;
-                    int col = posis - jtpEditLista.getLineStartOffset(row - 1) + 1;
-                    jlbLineaLista.setText("Línea: " + row);
-                    jlbColumnaLista.setText(" Columna: " + col);
-                } catch (BadLocationException exc) {
+                    int caretPos = jTextPane.getCaretPosition();
+                    int row = (caretPos == 0) ? 1 : 0;
+                    for (int offset = caretPos; offset > 0;) {
+                        offset = Utilities.getRowStart(jTextPane, offset) - 1;
+                        row++;
+                    }
+                    int offset = Utilities.getRowStart(jTextPane, caretPos);
+                    int col = caretPos - offset + 1;
+                    line.setText(String.valueOf("Línea: " + row));
+                    column.setText(String.valueOf(" Columna: " + col));
+                } catch (Exception exc) {
                     System.out.println(exc);
                 }
             }
         });
-    }//GEN-LAST:event_jtpEditListaKeyPressed
-
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCompilarLista;
     private javax.swing.JButton btnCompilarPista;
+    private javax.swing.JButton btnEliminarLista;
+    private javax.swing.JButton btnEliminarPista;
+    private javax.swing.JButton btnModificarLista;
+    private javax.swing.JButton btnModificarPista;
     private javax.swing.JButton btnPlay;
+    private javax.swing.JButton btnReproducirLista;
+    private javax.swing.JButton btnReproducirPista;
+    private javax.swing.JButton btnSeleccionarLista;
     private javax.swing.JButton btnStop;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JList<String> jList2;
+    private javax.swing.JList<String> jList3;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane10;
+    private javax.swing.JScrollPane jScrollPane11;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JTabbedPane jTabbedPane2;
+    private javax.swing.JTextPane jTextPane1;
     private javax.swing.JLabel jlbColumnaLista;
     private javax.swing.JLabel jlbColumnaPista;
     private javax.swing.JLabel jlbLineaLista;
     private javax.swing.JLabel jlbLineaPista;
+    private javax.swing.JLabel jlbNombreListaSeleccionado;
     private javax.swing.JMenuItem jmItemSalir;
     private javax.swing.JMenuItem jmOpenFile;
     private javax.swing.JPanel jpGrafica;
-    private javax.swing.JTextArea jtpEditLista;
-    private javax.swing.JTextArea jtpEditPista;
+    private javax.swing.JTable jtbeListaPista;
+    private javax.swing.JTextPane jtpEditLista;
+    private javax.swing.JTextPane jtpEditPista;
     private javax.swing.JTabbedPane jtpEditor;
     private javax.swing.JTextArea jtxtOuputLista;
     private javax.swing.JTextArea jtxtOuputPista;

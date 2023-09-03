@@ -42,7 +42,7 @@ ESPACIOBLANCO       = ({ESPACIO}|{SALTOLINEA}| [\t\n])+
 IDENTIFICADOR       = ({LETRA}|"_") ({LETRA}|{DIGITO}|"_")*
 
 /*---------------NOTAS----------------*/
-NOTAS               = "do#"|"re#"|"fa#"|"sol#"|"la#"|"do"|"re"|"mi"|"fa"|"sol"|"la"|"si"
+NOTAS               = [Dd]"o#"|[Rr]"e#"|[Ff]"a#"|[Ss]"ol#"|[Ll]"a#"|[Dd]"o"|[Rr]"e"|[Mm]"i"|[Ff]"a"|[Ss]"ol"|[Ll]"a"|[Ss]"i"
 
 
 /*--------- Codigo Incrustado ---------*/

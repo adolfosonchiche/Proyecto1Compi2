@@ -1,10 +1,12 @@
 package com.adolfosc.modelo.music;
 
+import java.io.Serializable;
+
 /**
  *
  * @author hectoradolfo
  */
-public class Nota {
+public class Nota implements Serializable {
     
     public static final String[] NOTE_NAMES = {"do", "do#", "re", "re#", "mi", "fa", "fa#", "sol", "sol#", "la", "la#", "si"};
     private int frecuencia;

@@ -1,10 +1,12 @@
 package com.adolfosc.modelo.music;
 
+import java.io.Serializable;
+
 /**
  *
  * @author hectoradolfo
  */
-public class PistaGuardado {
+public class PistaGuardado implements Serializable {
     
     private String codigo;
     private String nombre;

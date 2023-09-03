@@ -1,5 +1,6 @@
 package com.adolfosc.modelo.music;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +8,7 @@ import java.util.List;
  *
  * @author hectoradolfo
  */
-public class Lista {
+public class Lista implements Serializable {
     
     private String nombre;
     private boolean random;

@@ -2,6 +2,7 @@ package com.adolfosc.modelo.music;
 
 import com.adolfosc.modelo.instrucciones.Dimension;
 import com.adolfosc.modelo.instrucciones.Funcion;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +10,7 @@ import java.util.List;
  *
  * @author hectoradolfo
  */
-public class Expresion {
+public class Expresion implements Serializable {
     
     private String tipo;
     private String valor;

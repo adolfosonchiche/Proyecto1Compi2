@@ -576,7 +576,7 @@ non terminal  condicion,op3,opLog,op4,opNul,ciclo1;
 non terminal  op2,asg2,ciclo2,funciones2,funciones3;
 non terminal  cambiar,expr2,arr2p,fin1p,incrDecr;
 non terminal  funciones4,par2,expr3,fin5,fin6,arr3p;
-non terminal  tipoPara;
+non terminal  tipoPara, ciclo3, funcion5, finfunc;
 non terminal  listas,datosLista,finlista,valoresLista,pistasLista;
 
 
@@ -588,23 +588,26 @@ start with inicio;
 inicio ::= 
         IDENT:val {:MasIdent(val);:} inicio
     |   COMENT {:cerrarIdent();:}inicio
-    |   siguiente {:cerrarIdent();:} inicio
-    |   decl {:cerrarIdent();:} inicio
-    |   asg {:cerrarIdent();:} inicio
-    |   funcion {:cerrarIdent();:} inicio
-    |   condicional {:cerrarIdent();:} inicio
-    |   ciclo1 {:cerrarIdent();:} inicio
-    |   ciclo2 {:cerrarIdent();:} inicio
-    |   funciones2 {:cerrarIdent();:} inicio
-    |   funciones3 {:cerrarIdent();:} inicio
+    |   siguiente {:cerrarIdent();:} inicio LLAVEDER
+    |   decl {:cerrarIdent();:} PUNTCOMA inicio
+    |   asg {:cerrarIdent();:} PUNTCOMA inicio
+    |   funcion {:cerrarIdent();:} LLAVEIZ inicio LLAVEDER inicio
+    |   condicional {:cerrarIdent();:} LLAVEIZ inicio LLAVEDER inicio
+    |   ciclo1 {:cerrarIdent();:} LLAVEIZ inicio LLAVEDER inicio
+    |   ciclo2 {:cerrarIdent();:} LLAVEIZ inicio LLAVEDER ciclo3 inicio
+    |   CONTINUAR {:crearFuncion("continuar",false,"");:} PUNTCOMA inicio
+    |   funciones2 {:cerrarIdent();:} PUNTCOMA inicio
+    |   funciones3 {:cerrarIdent();:} PUNTCOMA inicio
+    |   funcion5 {:cerrarIdent();:} inicio
     |   cambiar {:cerrarIdent();:} inicio    
-    |   incrDecr {:cerrarIdent();:} inicio    
-    |   listas  
+    |   incrDecr {:cerrarIdent();:} PUNTCOMA inicio    
+    |   listas
+    |   error inicio 
     |   
 ;
 
 siguiente ::=
-        PISTA ID:nom {:crearPista(nom);:}ext
+        PISTA ID:nom {:crearPista(nom);:}ext LLAVEIZ
 ;
 
 ext ::=
@@ -744,8 +747,9 @@ arr3 ::=
 
 funcion ::=
             KEEP tipoD:tp ID:nom {:crearFuncion(nom,true,String.valueOf(tp));:} PARI par PARD
+        |   PRINCIPAL {:crearFuncion("principal",false,"");:} PARI PARD
+        |   KEEP PRINCIPAL {:crearFuncion("principal",true,"");:} PARI PARD 
         |   tipoD:tp ID:nom {:crearFuncion(nom,false,String.valueOf(tp));:} PARI  par PARD
-        |   ID:nom {:crearFuncion(nom,false,"");:} PARI par PARD
 ;
 
 par ::=
@@ -760,7 +764,8 @@ fin4 ::=
 ;
 
 condicional::=
-        SI PARI {:crearSi();crearCondicion();:} condicion PARD
+        SWITCH {:crearSwitch();:} PARI expr1 PARD
+    |   SI PARI {:crearSi();crearCondicion();:} condicion PARD
     |   SINOSI PARI {:crearSinoSi();crearCondicion();:} condicion PARD
     |   SINO {:crearSino();:}
 ;
@@ -800,6 +805,7 @@ op4 ::=
 
 ciclo1 ::=
         PARA {:crearPara();:} PARI tipoPara asg2 PUNTCOMA {:crearCondicion();:} condicion PUNTCOMA ID:idV op2:opP {:insUltValsPara(idV,String.valueOf(opP));:} PARD
+    |   MIENTRAS {:insertarMientras();:} PARI {:crearCondicion();:} condicion PARD 
 ;
 
 op2 ::=
@@ -819,9 +825,11 @@ tipoPara ::=
 ;
 
 ciclo2 ::=
-        MIENTRAS {:insertarMientras();:} PARI {:crearCondicion();:} condicion PARD
-    |   HACER {:insertarHacer();:}
-    |   CONTINUAR {:crearFuncion("continuar",false,"");:}
+    HACER {:insertarHacer();:}
+;
+
+ciclo3 ::= 
+    MIENTRAS {:insertarMientras();:} PARI {:crearCondicion();:} condicion PARD
 ;
 
 funciones2 ::=
@@ -834,16 +842,15 @@ funciones3 ::=
         REPRODUCIR {:crearFuncion("reproducir",false,"");:} PARI NOTA:nota {:insertarParametro("","");insExpr(nota,"nota");:} COMA par PARD
     |   ESPERAR {:crearFuncion("esperar",false,"");:} PARI par PARD
     |   RETORNA {:crearFuncion("retorna",false,"");insertarParametro("","");:} expr2
-    |   PRINCIPAL {:crearFuncion("principal",false,"");:} PARI PARD
-    |   KEEP PRINCIPAL {:crearFuncion("principal",true,"");:} PARI PARD
+   // |   ORDENAR {:crearFuncExpresion("longitud");:} PARI par2 PARD
+  //  |   KEEP PRINCIPAL {:crearFuncion("principal",true,"");:} PARI PARD
 
 ;
 
 cambiar ::=
-        SWITCH {:crearSwitch();:} PARI expr1 PARD
-    |   CASO {:crearCaso("normal");:} expr1
-    |   DEFAULT {:crearCaso("default");:}
-    |   SALIR {:crearFuncion("salir",false,"");:}
+        CASO {:crearCaso("normal");:} expr1 DOSPUNT
+    |   DEFAULT {:crearCaso("default");:} DOSPUNT
+    |   SALIR {:crearFuncion("salir",false,"");:} PUNTCOMA
 ;
 
 incrDecr ::=
@@ -852,11 +859,23 @@ incrDecr ::=
 ;
 
 funciones4 ::=
-        ID:nom {:crearFuncExpresion(String.valueOf(nom));:} PARI par2 PARD
+        PRINCIPAL {:crearFuncion("principal",false,"");:} PARI PARD
+    |   KEEP PRINCIPAL {:crearFuncion("principal",true,"");:} PARI PARD
+    |   ID:nom {:crearFuncExpresion(String.valueOf(nom));:} PARI par2 PARD
     |   REPRODUCIR {:crearFuncExpresion("reproducir");:} PARI NOTA:nota {:insertarParametro2("","");insExpr2(nota,"nota");:} COMA par2 PARD
     |   SUMARIZAR {:crearFuncExpresion("sumarizar");:} PARI par2 PARD
     |   LONGITUD {:crearFuncExpresion("longitud");:} PARI par2 PARD
 ;
+
+funcion5 ::= 
+        ID:nom {:crearFuncion(nom,false,"");:} PARI par PARD  finfunc
+;
+
+finfunc ::= 
+            LLAVEIZ inicio LLAVEDER
+        |   PUNTCOMA
+;
+
 
 par2 ::=
         tipoD:tp ID:nom {:insertarParametro2(String.valueOf(tp),nom);:} fin5
@@ -894,7 +913,7 @@ fin6 ::=
 ;
 
 listas ::=
-        LISTA DOSPUNT LLAVEIZ {:creacionLista();:} datosLista LLAVEDER
+        LLAVEIZ LISTA DOSPUNT LLAVEIZ {:creacionLista();:} datosLista LLAVEDER LLAVEDER
 ;
 
 datosLista ::=

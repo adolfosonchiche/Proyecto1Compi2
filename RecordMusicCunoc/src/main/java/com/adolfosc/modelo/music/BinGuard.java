@@ -1,5 +1,6 @@
 package com.adolfosc.modelo.music;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +8,7 @@ import java.util.List;
  *
  * @author hectoradolfo
  */
-public class BinGuard {
+public class BinGuard implements Serializable {
     
     List<PistaGuardado> pistasGuardadas;
     List<Lista> listasGuardadas;
