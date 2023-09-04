@@ -43,7 +43,7 @@ public class ControlGuardado {
 
     public void guardarBinario(String nombre) {
         try {
-            ObjectOutputStream escribiendoFichero = new ObjectOutputStream(new FileOutputStream(nombre+".dat"));
+            ObjectOutputStream escribiendoFichero = new ObjectOutputStream(new FileOutputStream("objetos.dat"));
             escribiendoFichero.writeObject(this.binarioGuard);
             escribiendoFichero.close();
         } catch (Exception e) {

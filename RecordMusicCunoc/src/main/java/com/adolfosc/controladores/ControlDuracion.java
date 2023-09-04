@@ -60,5 +60,21 @@ public class ControlDuracion {
     public void setDuracion(int duracion) {
         this.duracion = duracion;
     }
+
+    public List<Nota> getNotas() {
+        return notas;
+    }
+
+    public void setNotas(List<Nota> notas) {
+        this.notas = notas;
+    }
+
+    public List<Tiempo> getTiempos() {
+        return tiempos;
+    }
+
+    public void setTiempos(List<Tiempo> tiempos) {
+        this.tiempos = tiempos;
+    }
     
 }
