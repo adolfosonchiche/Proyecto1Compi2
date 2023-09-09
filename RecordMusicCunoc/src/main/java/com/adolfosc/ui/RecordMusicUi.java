@@ -3,8 +3,8 @@ package com.adolfosc.ui;
 import com.adolfosc.analizadores.ErrorSintaxis;
 import com.adolfosc.analizadores.colorear.ColorearLexer;
 import com.adolfosc.analizadores.service.CompilarCodigo;
+import com.adolfosc.conexion_socket.Servidor;
 import com.adolfosc.controladores.ControlDuracion;
-import com.adolfosc.controladores.ControlReproducir;
 import com.adolfosc.modelo.music.Lista;
 import com.adolfosc.modelo.music.Nota;
 import com.adolfosc.service.CargarListaService;
@@ -18,17 +18,11 @@ import java.io.BufferedReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.Sequence;
-import javax.sound.midi.Sequencer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JProgressBar;
 import javax.swing.JTextPane;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -54,7 +48,6 @@ public class RecordMusicUi extends javax.swing.JFrame {
     private List<String> mensajes;
     private int durPista = 0;
     private int caretAct;
-    private boolean pistaIniciada;
     private boolean codigoCargado;
     private List<String> pistasEnLista;
     private Lista lista;
@@ -62,6 +55,7 @@ public class RecordMusicUi extends javax.swing.JFrame {
     private CargarPistaService cargaPistaService;
     private CargarListaService cargarListaServie;
     private ControlDuracion controlD;
+    private Servidor servidor;
 
     /**
      * Creates new form MusicUi
@@ -106,6 +100,10 @@ public class RecordMusicUi extends javax.swing.JFrame {
         //cargar listas de reproduccion y pistas
         this.cargaPistaService.cargarPistas(this.jtableListaPista);
         this.cargarListaServie.cargarListas(jlistListaReproduccion);
+        
+        //iniciar servidor que respondera al cliente
+        this.servidor = new Servidor();
+        this.servidor.iniciarServidor();
     }
 
     /**
@@ -725,48 +723,9 @@ public class RecordMusicUi extends javax.swing.JFrame {
         System.exit(0);
     }//GEN-LAST:event_jmItemSalirActionPerformed
 
-    private ControlReproducir controlR1;
+    
     private void btnPlayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPlayActionPerformed
         
-        try {
-            System.out.println("safdasfd musica");
-            //Reproducir la pista
-            Avanzando avanzando = null;
-            Thread hilo1 = null;
-            Thread hilo2 = null;
-            ReprodPista repPista = null;
-            if (pistaIniciada == false) {
-                this.pistaIniciada = true;
-                //Empezar a reproducir pista
-                //MostrarIconoPausar();
-                System.out.println("cantidad de notas " + this.notasPistaRep.size());
-                controlR1 = new ControlReproducir(this.notasPistaRep);
-                repPista = new ReprodPista();
-
-                avanzando = new Avanzando(this.durPista);
-                avanzando.setBar(this.progressBar);
-                hilo1 = new Thread(avanzando);
-                hilo1.start();
-                hilo2 = new Thread(repPista);
-                hilo2.start();
-                //controlR1.reproducir();
-
-            } else {
-                //Detener reproduccion pista
-                this.pistaIniciada = false;
-                //MostrarIconoPlay();
-                if (hilo1 != null) {
-                    hilo1.stop();
-                }
-                if (hilo2 != null) {
-                    hilo2.stop();
-                }
-            }
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-        
-        /*
         if (progressBar.getValue() == 0) {
             estadoProgres = 0;
         }
@@ -775,99 +734,26 @@ public class RecordMusicUi extends javax.swing.JFrame {
                 activarPb.setMin(0);
                 activarPb.setMax(this.durPista);
                 activarPb.setOpcion(0);
-                activarPb.startProgress(progressBar, btnPlay);
+                activarPb.startProgress(progressBar, btnPlay, this.notasPistaRep);
                 estadoProgres = 1;
                 activarPb.setOpcion(1);
                 break;
             case 1:
-                activarPb.startProgress(progressBar, btnPlay);
+                activarPb.startProgress(progressBar, btnPlay, this.notasPistaRep);
                 estadoProgres = 2;
                 activarPb.setOpcion(2);
                 break;
             default:
-                activarPb.startProgress(progressBar, btnPlay);
+                activarPb.startProgress(progressBar, btnPlay, this.notasPistaRep);
                 estadoProgres = 1;
                 activarPb.setOpcion(1);
                 break;
-        }
-        
-        */            
+        }           
     }//GEN-LAST:event_btnPlayActionPerformed
-
-    class ReprodPista implements Runnable {
-
-        private Sequencer sequencer;
-
-        @Override
-        public void run() {
-            try {
-                this.sequencer = MidiSystem.getSequencer();
-                sequencer.open();
-                Sequence sequence = null;
-                try {
-                    sequence = controlR1.crearSecuencia();
-                } catch (Throwable ex) {
-                    Logger.getLogger(ControlReproducir.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                sequencer.setSequence(sequence);
-                sequencer.start();
-                while (sequencer.isRunning()) {
-                    Thread.sleep(1000L);
-                }
-                sequencer.stop();
-            } catch (Exception e) {
-
-            }
-        }
-
-    }
-    
-    class Avanzando implements Runnable {
-
-        JProgressBar bar;
-
-        private int tiempo;
-
-        public Avanzando(int tiempo) {
-            this.tiempo = tiempo;
-        }
-
-        @Override
-        public void run() {
-            for (int i = 1000; i <= tiempo;) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(Avanzando.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-                double time = (i * 100 / tiempo);
-                int time2 = (int) Math.round(time);
-                this.getBar().setValue(time2);
-                System.out.println(("hola mundo" + time2));
-
-                if (this.getBar().getValue() >= tiempo || pistaIniciada == false) {
-                    pistaIniciada = false;
-                    System.out.println("Ha terminado el Jbar No");
-                    break;                    
-                }
-                i += 1000;
-            }
-            //MostrarIconoPlay();
-        }
-
-        public void setBar(JProgressBar bar) {
-            this.bar = bar;
-        }
-
-        public JProgressBar getBar() {
-            return bar;
-        }
-    }
     
     private void btnStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStopActionPerformed
         activarPb.setOpcion(3);
-        activarPb.startProgress(progressBar, btnPlay);
+        activarPb.startProgress(progressBar, btnPlay, this.notasPistaRep);
         estadoProgres = 0;
         activarPb.setOpcion(0);
     }//GEN-LAST:event_btnStopActionPerformed
@@ -903,7 +789,7 @@ public class RecordMusicUi extends javax.swing.JFrame {
 
             if (this.controlD != null) {
                 System.out.println("hola mundo");
-                this.jlbFinDuracionPista.setText(String.valueOf(this.controlD.getDuracion()));
+                this.jlbFinDuracionPista.setText(String.valueOf(this.durPista));
                 this.jlbNombrePistaReproducir.setText(cancion);
             }
         } catch (Exception e) {
@@ -974,50 +860,6 @@ public class RecordMusicUi extends javax.swing.JFrame {
             }
         });
     }
-    
-   /* class Avanzando implements Runnable {
-
-        JProgressBar bar;
-
-        private int tiempo;
-
-        public Avanzando(int tiempo) {
-            this.tiempo = tiempo;
-        }
-
-        @Override
-        public void run() {
-            for (int i = 1000; i <= tiempo;) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(Avanzando.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-                double time = (i * 100 / tiempo);
-                int time2 = (int) Math.round(time);
-                this.getBar().setValue(time2);
-                System.out.println((time2));
-
-                if (this.getBar().getValue() >= tiempo || pistaIniciada == false) {
-                    pistaIniciada = false;
-                    break;
-                    //JOptionPane.showMessageDialog(new Index(), "Ha terminado el Jbar No: " + num_bar);
-                }
-                i += 1000;
-            }
-            //MostrarIconoPlay();
-        }
-
-       public void setBar(JProgressBar bar) {
-            this.bar = bar;
-        }
-
-        public JProgressBar getBar() {
-            return bar;
-        }
-
-    }*/
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCompilarLista;
