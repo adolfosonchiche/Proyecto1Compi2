@@ -1,10 +1,14 @@
 package com.adolfosc.conexion_socket;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -16,6 +20,10 @@ public class Servidor implements Runnable {
     private int port = 5000;
     private int portSend = 5001;
     private Thread thread;
+    private ServerSocket servidor;
+    private Socket sc;
+    private DataInputStream in;
+    private DataOutputStream out;
 
     public Servidor() {
         thread = new Thread(this);
@@ -30,31 +38,42 @@ public class Servidor implements Runnable {
         // this.server.startServer(txtaLog, typeSwitch);
 
         try {
-            ServerSocket served = new ServerSocket(port);
-            System.out.println("servidor iniciado");
-            String ip, message;
+            //Creamos el socket del servidor
+            servidor = new ServerSocket(port);
+            System.out.println("Servidor iniciado");
 
+            //Siempre estara escuchando peticiones
             while (true) {
-                try (Socket socket = served.accept()) {
-                    ObjectInputStream dataIn = new ObjectInputStream(socket.getInputStream());
-                    Object as = dataIn.readObject();
 
-                    Trama trama = (Trama) as;
-                    message = trama.getMessage();
-                    ip = trama.getIp();
-                    System.out.println("mensaje recivido: \n" + message);
+                //Espero a que un cliente se conecte
+                sc = servidor.accept();
 
-                    try ( //socket para enviar al destinatario
-                            Socket sendData = new Socket(ip, portSend)) {
-                        ObjectOutputStream tramaReenvio = new ObjectOutputStream(sendData.getOutputStream());
-                        tramaReenvio.writeObject(message);
-                    }
+                System.out.println("Cliente conectado");
+                in = new DataInputStream(sc.getInputStream());
+                out = new DataOutputStream(sc.getOutputStream());
 
-                }
+                //Leo el mensaje que me envia
+                String mensaje = in.readUTF();
+                //Leer mensaje y validarlo 
+                /*ControlServidor controlServ = new ControlServidor(mensaje);
+                controlServ.compilarMensaje();
+                String respuesta = controlServ.getRespuesta();*/
+                
+                System.out.println(mensaje);
+
+                //Le envio un mensaje
+                //Enviar respuesta
+//                out.writeUTF("¡Hola mundo desde el servidor!");
+                out.writeUTF("respuesta del servidor");
+
+                //Cierro el socket
+                sc.close();
+                System.out.println("Cliente desconectado");
 
             }
-        } catch (IOException | ClassNotFoundException ex) {
-            System.out.println("error \n" + ex);
+
+        } catch (IOException ex) {
+            Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
