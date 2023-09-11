@@ -1,5 +1,6 @@
 package com.adolfosc.conexion_socket;
 
+import com.adolfosc.controladores.ControlServidor;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -52,19 +53,27 @@ public class Servidor implements Runnable {
                 in = new DataInputStream(sc.getInputStream());
                 out = new DataOutputStream(sc.getOutputStream());
 
+                String mensajesss = "<respuesta>\n" +
+"<listas>\n" +
+"< lista nombre = \"demo2\" pistas = 1>\n" +
+"< lista nombre = \"demo1\" pistas = 1>\n" +
+"</listas>\n" +
+"</respuesta>";
                 //Leo el mensaje que me envia
                 String mensaje = in.readUTF();
-                //Leer mensaje y validarlo 
-                /*ControlServidor controlServ = new ControlServidor(mensaje);
-                controlServ.compilarMensaje();
-                String respuesta = controlServ.getRespuesta();*/
-                
                 System.out.println(mensaje);
+                //Leer mensaje y validarlo 
+                ControlServidor controlServ = new ControlServidor(mensaje);
+                controlServ.compilarMensaje();
+                String respuesta = controlServ.getRespuesta();
+                System.out.println("cantidad de musica "  );
+                
+                System.out.println("respuesta: \n" + respuesta);
 
                 //Le envio un mensaje
                 //Enviar respuesta
 //                out.writeUTF("¡Hola mundo desde el servidor!");
-                out.writeUTF("respuesta del servidor");
+                out.writeUTF(respuesta);
 
                 //Cierro el socket
                 sc.close();
@@ -73,6 +82,8 @@ public class Servidor implements Runnable {
             }
 
         } catch (IOException ex) {
+            Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
             Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

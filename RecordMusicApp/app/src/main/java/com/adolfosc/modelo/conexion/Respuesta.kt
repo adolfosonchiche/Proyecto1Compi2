@@ -6,8 +6,13 @@ class Respuesta {
 
     private var tipo: String? = null
     private var nombV: String? = null
-    private var valores: MutableList<CantidadRespuesta>? = null
-    private var notas: MutableList<Nota>? = null
+    private var valores: ArrayList<CantidadRespuesta>? = null
+    private var notas: ArrayList<Nota>? = null
+
+    constructor() {
+        valores = ArrayList()
+        notas = ArrayList()
+    }
 
     fun Respuesta() {
         valores = ArrayList()
@@ -34,7 +39,7 @@ class Respuesta {
         return valores
     }
 
-    fun setValores(valores: MutableList<CantidadRespuesta>?) {
+    fun setValores(valores: ArrayList<CantidadRespuesta>?) {
         this.valores = valores
     }
 
@@ -42,11 +47,12 @@ class Respuesta {
         return notas
     }
 
-    fun setNotas(notas: MutableList<Nota>?) {
+    fun setNotas(notas: ArrayList<Nota>?) {
         this.notas = notas
     }
 
     fun insertarValor(valor: CantidadRespuesta) {
+        println("valor " + valor)
         valores!!.add(valor)
     }
 

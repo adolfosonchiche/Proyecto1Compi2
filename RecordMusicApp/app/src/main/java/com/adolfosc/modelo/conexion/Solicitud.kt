@@ -6,6 +6,9 @@ class Solicitud {
     private var nombre: String? = null
     private var datos: MutableList<Dato>? = null
 
+    constructor() {
+        datos = ArrayList()
+    }
     fun Solicitud() {
         datos = ArrayList()
     }

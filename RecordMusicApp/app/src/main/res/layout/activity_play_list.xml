@@ -17,7 +17,7 @@
         <EditText
             android:id="@+id/etNombreListaLista"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_marginTop="50dp"
             android:ems="10"
             android:hint="@string/hint_nombre_lista"
@@ -29,6 +29,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
+            android:onClick="solicitarPista"
             android:text="@string/btn_solicitud_lista" />
 
         <TextView
@@ -38,5 +39,14 @@
             android:layout_marginTop="30dp"
             android:text="@string/label_selec_lista_repro"
             android:textSize="20sp" />
+
+        <ListView
+            android:id="@+id/lvPlayList"
+            android:layout_width="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
+            android:textSize="15sp"
+            app:layout_constraintTop_toBottomOf="@+id/listProductOpt"
+            android:layout_height="370dp" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -7,6 +7,13 @@ class Dato {
     private var octava: String? = null
     private var duracion: String? = null
 
+    constructor() {
+        canal = ""
+        nota = ""
+        octava = ""
+        duracion = ""
+    }
+
     fun Dato() {
         canal = ""
         nota = ""

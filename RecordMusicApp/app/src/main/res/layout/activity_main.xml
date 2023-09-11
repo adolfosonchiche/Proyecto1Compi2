@@ -35,21 +35,11 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/etNombreLIstaIni"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="100dp"
-            android:ems="10"
-            android:hint="@string/hint_nombre_lista"
-            android:inputType="text"
-            android:text="" />
-
         <Button
             android:id="@+id/button3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="150dp"
             android:onClick="conectar"
             android:text="@string/btn_solicitud_lista_lista" />
 

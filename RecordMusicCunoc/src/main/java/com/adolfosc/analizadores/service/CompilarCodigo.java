@@ -37,11 +37,11 @@ public class CompilarCodigo {
                 parser.parse();
                 errores = parser.getErroresCom();
                 lista = parser.getLista();
-                if (lista != null && !esLista) {
+                /*if (!esLista) {
                     jTextArea1.setText("En este editor no se pueden compilar código para lista de reproducción. ");
                     return;
-                }
-                if (lista == null && esLista) {
+                }*/
+                if (lista != null && !esLista) {
                     jTextArea1.setText("En este editor no se pueden compilar código para las pistas.");
                     return;
                 }
@@ -53,10 +53,12 @@ public class CompilarCodigo {
                 jTextArea1.setText("se encontraron errores!!.");
             }
             if (errores.size() > 0) {
+                System.out.println("se encontraron erroes " + errores.size());
                 JFReporteErrores jfReporteErrores = new JFReporteErrores(errores);
                 jfReporteErrores.setVisible(true);
             } else {
                 if (esLista) {
+                    System.out.println("--");
                     //Validar lista y guardar la pista
                     ControlSemantico semantico = new ControlSemantico();
                     boolean valdList = semantico.validarLista(lista);

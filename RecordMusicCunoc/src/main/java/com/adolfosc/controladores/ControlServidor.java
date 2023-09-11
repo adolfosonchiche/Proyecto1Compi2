@@ -61,7 +61,7 @@ public class ControlServidor {
             }
         } catch (Exception e) {
             System.out.println(e);
-        }
+    }
     }
 
     public void validarSolicitud(Solicitud solicitud) {
