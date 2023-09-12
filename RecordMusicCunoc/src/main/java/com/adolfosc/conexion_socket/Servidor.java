@@ -4,8 +4,6 @@ import com.adolfosc.controladores.ControlServidor;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -53,12 +51,7 @@ public class Servidor implements Runnable {
                 in = new DataInputStream(sc.getInputStream());
                 out = new DataOutputStream(sc.getOutputStream());
 
-                String mensajesss = "<respuesta>\n" +
-"<listas>\n" +
-"< lista nombre = \"demo2\" pistas = 1>\n" +
-"< lista nombre = \"demo1\" pistas = 1>\n" +
-"</listas>\n" +
-"</respuesta>";
+                             
                 //Leo el mensaje que me envia
                 String mensaje = in.readUTF();
                 System.out.println(mensaje);
@@ -66,7 +59,6 @@ public class Servidor implements Runnable {
                 ControlServidor controlServ = new ControlServidor(mensaje);
                 controlServ.compilarMensaje();
                 String respuesta = controlServ.getRespuesta();
-                System.out.println("cantidad de musica "  );
                 
                 System.out.println("respuesta: \n" + respuesta);
 

@@ -2,8 +2,8 @@ package com.adolfosc.modelo.music
 
 class Nota {
 
-    val NOTE_NAMES =
-        arrayOf("do", "do#", "re", "re#", "mi", "fa", "fa#", "sol", "sol#", "la", "la#", "si")
+    var  NOTE_NAMES =
+        arrayOf("do", "do#", "re", "re#", "mi", "fa", "fa#", "sol", "sol#", "la", "la#", "si", "esperar")
     private var frecuencia = 0
     private var nombre: String? = null
     private var octava = 0

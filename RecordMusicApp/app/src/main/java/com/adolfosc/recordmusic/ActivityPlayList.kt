@@ -9,7 +9,6 @@ import android.widget.EditText
 import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.adolfosc.conexion_socket.Cliente
 import com.adolfosc.conexion_socket.service.CompilarService
 import com.adolfosc.modelo.conexion.CantidadRespuesta
 import com.google.android.material.snackbar.Snackbar
@@ -37,6 +36,9 @@ class ActivityPlayList : AppCompatActivity(), Runnable {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        //supportActionBar!!.setDisplayShowHomeEnabled(true)
+        //supportActionBar!!.setIcon(R.drawable.record)
         setContentView(R.layout.activity_play_list)
         this.nombreListas = ArrayList<String>()
         this.listaPlayList = findViewById<View>(R.id.lvPlayList) as ListView
@@ -90,7 +92,6 @@ class ActivityPlayList : AppCompatActivity(), Runnable {
                     .setAction("Action", null).show()
             }
         } else {
-
             this.irListaPistas(view!!, textoEntrada, -1)
         }
 
@@ -125,7 +126,8 @@ class ActivityPlayList : AppCompatActivity(), Runnable {
 
             val optmin = Intent(this, ActivityTrackList::class.java)
             optmin.putExtra("mensaje", mensajeRe)
-            finish()
+            //this.thread!!.stop()
+            //finish()
             startActivity(optmin)
         } catch (e: IOException) {
             Toast.makeText(this, "error en conexion Conexion$e", Toast.LENGTH_LONG).show()

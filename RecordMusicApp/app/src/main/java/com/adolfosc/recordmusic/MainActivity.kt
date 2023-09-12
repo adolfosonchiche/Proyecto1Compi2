@@ -5,16 +5,13 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.ui.AppBarConfiguration
 import com.adolfosc.conexion_socket.Cliente
 import com.adolfosc.recordmusic.databinding.ActivityMainBinding
-import com.google.android.material.snackbar.Snackbar
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
-import java.net.ServerSocket
 import java.net.Socket
 
 
@@ -36,13 +33,10 @@ class MainActivity : AppCompatActivity(), Runnable {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setSupportActionBar(binding.toolbar)
+       // supportActionBar!!.setDisplayShowHomeEnabled(true)
+        //supportActionBar!!.setIcon(R.drawable.record)
 
 
-        binding.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Enviar correo", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -109,10 +103,10 @@ class MainActivity : AppCompatActivity(), Runnable {
 
             val intent = Intent(this, ActivityPlayList::class.java)
             intent.putExtra("mensaje", mensajeRe)
-            finish()
+            //finish()
             startActivity(intent)
         } catch (e: IOException) {
-            Toast.makeText(this, "error en conexion Conexion$e", Toast.LENGTH_LONG).show()
+            //Toast.makeText(this, "error en conexion Conexion$e", Toast.LENGTH_LONG).show()
             println("no hay red disponible....$e")
         }
         // Inicia la segunda actividad cuando se produce un evento (por ejemplo, clic en un botón)

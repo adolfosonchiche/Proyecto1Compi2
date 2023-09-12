@@ -14,5 +14,7 @@
     <string name="btn_solicitud_pista">Solicitar pista</string>
     <string name="lable_select_pista">Selecciona una pista</string>
     <string name="hint_select_pista">Escribe nombre de una pista</string>
+    <string name="desctiption">boton</string>
+    <string name="desctiption1">boton</string>
 
 </resources>

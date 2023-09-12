@@ -4,6 +4,53 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/fondo1"
     tools:context=".ActivityTrackPlayer">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="327dp"
+        android:layout_height="223dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="56dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="@string/desctiption"
+        app:srcCompat="@drawable/grafica" />
+
+    <ImageButton
+        android:id="@+id/imgBtnPlayPista"
+        android:layout_width="91dp"
+        android:layout_height="90dp"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="16dp"
+        android:contentDescription="@string/desctiption1"
+        android:onClick="reproducirPista"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvNombrePista"
+        app:srcCompat="@drawable/play" />
+
+    <ImageButton
+        android:id="@+id/imageButton3"
+        android:layout_width="87dp"
+        android:layout_height="92dp"
+        android:layout_marginStart="64dp"
+        android:layout_marginTop="12dp"
+        android:contentDescription="@string/desctiption"
+        android:onClick="stopPista"
+        app:layout_constraintStart_toEndOf="@+id/imgBtnPlayPista"
+        app:layout_constraintTop_toBottomOf="@+id/tvNombrePista"
+        app:srcCompat="@drawable/stop" />
+
+    <TextView
+        android:id="@+id/tvNombrePista"
+        android:layout_width="271dp"
+        android:layout_height="55dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="20dp"
+        android:textColor="@color/design_default_color_error"
+        android:textSize="24sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
