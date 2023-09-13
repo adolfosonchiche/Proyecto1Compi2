@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -31,6 +32,7 @@ public class CargarPistaService {
     private CompiladorParser parser;
     private ControlCrearPista crearPista;
     private ControlDuracion controlD;
+    private JTextArea jTextArea1 = new JTextArea();
     
     
     public void cargarPistas(JTable tablePista) {
@@ -155,7 +157,7 @@ public class CargarPistaService {
                 } else {
                     for (Pista pista : pistas) {
                         this.crearPista = new ControlCrearPista(pista);
-                        this.crearPista.initPista();
+                        this.crearPista.initPista(jTextArea1);
                         notasPistaRep = this.crearPista.getNotas();
                         //Obtener Duracion
                         this.controlD = new ControlDuracion(notasPistaRep);

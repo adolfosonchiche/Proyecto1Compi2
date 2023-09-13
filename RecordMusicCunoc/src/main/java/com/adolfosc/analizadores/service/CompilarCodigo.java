@@ -86,7 +86,7 @@ public class CompilarCodigo {
                 } else {
                     for (Pista pista : pistas) {
                         ControlCrearPista ctrCrearPista = new ControlCrearPista(pista);
-                        ctrCrearPista.initPista();
+                        ctrCrearPista.initPista(jTextArea1);
                         notasPistaRep = ctrCrearPista.getNotas();
                         mensajes = ctrCrearPista.getMensajes();
                         System.out.println("----- " + pista.getInstrucciones().size());

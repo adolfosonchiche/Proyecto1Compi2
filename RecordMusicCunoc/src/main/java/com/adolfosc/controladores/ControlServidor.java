@@ -17,6 +17,7 @@ import com.adolfosc.ui.JFReporteErrores;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JTextArea;
 
 /**
  *
@@ -26,6 +27,7 @@ public class ControlServidor {
     
     private String mensaje;
     private String respuesta;
+    private JTextArea jTextArea1 = new JTextArea();
 
     public ControlServidor(String mensaje) {
         this.mensaje = mensaje;
@@ -200,7 +202,7 @@ public class ControlServidor {
                 } else {
                     for (Pista pista : pistas) {
                         ControlCrearPista crearPista = new ControlCrearPista(pista);
-                        crearPista.initPista();
+                        crearPista.initPista(jTextArea1);
                         notas = crearPista.getNotas();
                     }
                     valR = "Cargado Correctamente";
@@ -254,7 +256,7 @@ public class ControlServidor {
             } else {
                 for (Pista pista : pistas) {
                     ControlCrearPista crearPista = new ControlCrearPista(pista);
-                    crearPista.initPista();
+                    crearPista.initPista(jTextArea1);
                     List<Nota> notasPistaRep = crearPista.getNotas();
                     //Obtener Duracion
                     ControlDuracion controlD = new ControlDuracion(notasPistaRep);

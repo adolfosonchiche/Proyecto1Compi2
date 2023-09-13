@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JTextArea;
 /**
  *
  * @author hectoradolfo
@@ -42,6 +43,7 @@ public class ControlCrearPista {
     private List<Nota> notas;
     private int ambito;
     private List<String> mensajes;
+    private JTextArea jTextArea1;
 
     public ControlCrearPista(Pista pista) {
         this.pista = pista;
@@ -52,8 +54,9 @@ public class ControlCrearPista {
         this.ambito = 0;
     }
 
-    public void initPista() {
+    public void initPista(JTextArea jTextArea1) {
         inicializarPista();
+        this.jTextArea1 = jTextArea1;
     }
 
     private void inicializarPista() {
@@ -283,6 +286,7 @@ public class ControlCrearPista {
     private int parseStringToInt(String val) {
         int valR = 0;
         if (val.isBlank() || val.equals("nulo")) {
+            this.jTextArea1.append("error semantico: la variable no existe  o no esta inizializado");
             System.out.println("error semantico: la variable no existe  o no esta inizializado");
            return 0; 
         }
@@ -488,6 +492,8 @@ public class ControlCrearPista {
     private String ejecutarSi(CondSi condisionSi) {
         this.ambito++;
         String valR = "";
+        try {
+            
         List<Expresion> expresionesCond = obtenerCondicion(condisionSi.getCondiciones(), condisionSi.getOperadores());
         String valCond = obtenerValor(expresionesCond);
         if (valCond.equalsIgnoreCase("true") || valCond.equalsIgnoreCase("verdadero")) {
@@ -526,12 +532,16 @@ public class ControlCrearPista {
         }
         cerrarVariablesAmbito();
         this.ambito--;
+        } catch (Exception e) {
+            this.jTextArea1.append("error semantico en la sentencia si");
+        }
         return valR;
     }
 
     private String ejecutarSwitch(SwitchC switchC) {
         String valR = "";
-        this.ambito++;
+        try {
+            this.ambito++;
         Expresion vExpr = switchC.getVariable().get(0);
         String variable = vExpr.getValor();
 
@@ -567,12 +577,17 @@ public class ControlCrearPista {
         }
         cerrarVariablesAmbito();
         this.ambito--;
+        } catch (Exception e) {
+            this.jTextArea1.append("error semantico en la sentencia switch");
+        }
         return valR;
     }
 
     private String ejecutarPara(Para para) {
         String valR = "";
-        this.ambito++;
+        
+        try {
+            this.ambito++;
         Asignacion asig = para.getAsignacion();
         String variable = asig.getVariable();
         Simbolo simVar = buscarEnSimbolos(variable, this.ambito);
@@ -626,12 +641,16 @@ public class ControlCrearPista {
 
         cerrarVariablesAmbito();
         this.ambito--;
+        } catch (Exception e) {
+            this.jTextArea1.append("error semantico en la sentencia para");
+        }
         return valR;
     }
 
     private String ejecutarMientras(Mientras mientras) {
         String valR = "";
-        this.ambito++;
+        try {
+            this.ambito++;
         boolean condicionSalir = true;
         List<Expresion> valoresExprCond = obtenerCondicion(mientras.getCondiciones(), mientras.getOperadores());
         while (condicionSalir) {
@@ -648,6 +667,9 @@ public class ControlCrearPista {
         }
         cerrarVariablesAmbito();
         this.ambito--;
+        } catch (Exception e) {
+            this.jTextArea1.append("error semantico en la sentencia mientras");
+        }
         return valR;
     }
 
@@ -681,6 +703,7 @@ public class ControlCrearPista {
             valorSim++;
             sim.setValor(String.valueOf(valorSim));
         } catch (Exception e) {
+            this.jTextArea1.append("error semantico:  al intentan auemenar la variable: " + sim.getNombre());
 
         }
     }
@@ -691,13 +714,15 @@ public class ControlCrearPista {
             valorSim--;
             sim.setValor(String.valueOf(valorSim));
         } catch (Exception e) {
+            this.jTextArea1.append("error semantico:  al intentan disminuir la variable: " + sim.getNombre());
 
         }
     }
 
     private List<Expresion> obtenerCondicion(List<Condicion> condiciones, List<String> operadores) {
         List<Expresion> expresiones = new ArrayList<>();
-        int contOp = 0;
+        try {
+            int contOp = 0;
         for (Condicion condicion : condiciones) {
             if (contOp > 0) {
                 String operador = operadores.get(contOp);
@@ -737,6 +762,9 @@ public class ControlCrearPista {
                     expresiones.add(expresion);
                 }
             }
+        }
+        } catch (Exception e) {
+            this.jTextArea1.append("error semantico, no se puede obtener la expresion para la condicion");
         }
         return expresiones;
     }
@@ -787,7 +815,8 @@ public class ControlCrearPista {
     }
     
     private void incrementarAsignacion(String valor,Simbolo simA){
-        String tipo = simA.getTipo();
+        try {
+            String tipo = simA.getTipo();
         String valA = simA.getValor();
         if (tipo.equals("cadena")) {
             valA = valA.replace("\"", "");
@@ -803,10 +832,14 @@ public class ControlCrearPista {
             double total = valA2+valor2;
             simA.setValor(String.valueOf(total));
         }
+        } catch (Exception e) {
+            this.jTextArea1.append("error semantico en la asigancion o incremento del valor de la variable");
+        }
     }
 
     private void validarDeclaracionInit(Declaracion declaracion) {
-        String tipo = declaracion.getTipoDecl();
+        try {
+            String tipo = declaracion.getTipoDecl();
         boolean esKeep = declaracion.isEsKeep();
         //Validar si es arreglo
         if (declaracion.getDimensiones().isEmpty()) {
@@ -869,11 +902,15 @@ public class ControlCrearPista {
             }
 
         }
+        } catch (Exception e) {
+            this.jTextArea1.append("error semantico en la declaracion de variables");
+        }
 
     }
 
     private void declaracionArreglo(DeclDim declDim, String dim, Simbolo sim) {
-        List<DeclDim> hijos = declDim.getDeclDimHijos();
+        try {
+            List<DeclDim> hijos = declDim.getDeclDimHijos();
         int i = 0;
         for (DeclDim hijo : hijos) {
             String dim2 = "";
@@ -918,11 +955,15 @@ public class ControlCrearPista {
             }
             this.simbolosInit.add(simbolo);
         }
+        } catch (Exception e) {
+            this.jTextArea1.append("error semantico al declara el arreglo");
+        }
     }
 
     private String obtenerValor(List<Expresion> valoresExpresion) {
         String valores = "";
-        for (Expresion expresion : valoresExpresion) {
+        try {
+            for (Expresion expresion : valoresExpresion) {
             String tipo = expresion.getTipo();
             switch (tipo) {
                 case "identificador":
@@ -986,6 +1027,9 @@ public class ControlCrearPista {
                     valores += expresion.getValor();
             }
         }
+        } catch (Exception e) {
+            this.jTextArea1.append("error semantico: no se puede obtener el valor de la expresión");
+        }
 
         String valorR = obtenerValExpr(valores);
         return valorR;
@@ -993,7 +1037,8 @@ public class ControlCrearPista {
 
     private Simbolo buscarEnSimbolos(String nombre, int ambito) {
         Simbolo simR = null;
-        int tamano = this.simbolosInit.size();
+        try {
+            int tamano = this.simbolosInit.size();
         for (int i = tamano; i > 0; i--) {
             Simbolo sim = this.simbolosInit.get(i - 1);
             if (sim.getNombre().equals(nombre)) {
@@ -1002,12 +1047,16 @@ public class ControlCrearPista {
                 }
             }
         }
+        } catch (Exception e) {
+            this.jTextArea1.append("error semantico: no se encontro la variable " + nombre);
+        }
         return simR;
     }
 
     private Simbolo buscarEnSimbolosArreglo(String nombre, List<Integer> dimensiones) {
         Simbolo simR = null;
-        int tamano = this.simbolosInit.size();
+        try {
+            int tamano = this.simbolosInit.size();
         for (int i = 0; i < tamano; i++) {
             Simbolo sim = this.simbolosInit.get(i - 1);
             if (sim.getNombre().equals(nombre) && sim.isEsDeclArr() == false) {
@@ -1025,6 +1074,9 @@ public class ControlCrearPista {
                     return sim;
                 }
             }
+        }
+        } catch (Exception e) {
+            this.jTextArea1.append("se encontro un error semantico al buscar el valor de arreglo");
         }
         return simR;
     }
