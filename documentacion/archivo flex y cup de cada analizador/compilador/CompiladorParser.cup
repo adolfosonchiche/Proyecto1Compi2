@@ -1,0 +1,942 @@
+package com.adolfosc.analizadores.compilador;
+
+import java_cup.runtime.*;
+import java.util.ArrayList;
+import java.util.List;
+import com.adolfosc.analizadores.ErrorSintaxis;
+import com.adolfosc.modelo.music.Pista;
+import com.adolfosc.modelo.music.Expresion;
+import com.adolfosc.modelo.music.Instruccion;
+import com.adolfosc.modelo.music.Parametro;
+import com.adolfosc.modelo.music.Condicion;
+import com.adolfosc.modelo.music.Lista;
+import com.adolfosc.modelo.instrucciones.Asignacion;
+import com.adolfosc.modelo.instrucciones.Dimension;
+import com.adolfosc.modelo.instrucciones.Declaracion;
+import com.adolfosc.modelo.instrucciones.Funcion;
+import com.adolfosc.modelo.instrucciones.DeclDim;
+import com.adolfosc.modelo.instrucciones.CondSi;
+import com.adolfosc.modelo.instrucciones.Para;
+import com.adolfosc.modelo.instrucciones.Mientras;
+import com.adolfosc.modelo.instrucciones.CasoC;
+import com.adolfosc.modelo.instrucciones.SwitchC;
+import com.adolfosc.modelo.instrucciones.IncrDecr;
+import java.util.Stack;
+import java.util.Arrays;
+
+parser code {:
+
+    private List<ErrorSintaxis> erroresCom; 
+    private List<Pista> pistas;
+    private int cantidadIdentaciones;  
+    Declaracion declaracionAct; 
+    List<Expresion> valoresExpresion; 
+    List<Expresion> valoresExpresion2;   
+    boolean esDimension;
+    Stack<Dimension> dimesiones;
+    Stack<Expresion> expresionesArreglos;
+    List<DeclDim> declaracionesDimension; 
+    DeclDim declDimPadre;   
+    boolean primerExpresion;
+    boolean primerDeclDim;
+    private Asignacion asignacionAct;
+    private List<Instruccion> instruccionesFunciones;
+    private Funcion funcionAct;
+    private boolean dentroDeFuncion;
+    private CondSi condisionSiAct;
+    private Condicion condicionAct;
+    private String insCond;
+    private Para paraAct;
+    private Mientras mientrasAct;
+    private Stack<Mientras> desdesMientras;
+    private SwitchC switchAct;
+    private Lista listaAct;
+
+	public CompiladorParser(CompiladorLexer lex) {
+		super(lex);
+        cantidadIdentaciones = 0;
+        this.erroresCom = lex.getErroresCom();
+        this.pistas = new ArrayList<>();
+        this.esDimension = false;
+        this.dimesiones = new Stack<>();
+        this.desdesMientras = new Stack<>();
+        this.expresionesArreglos = new Stack<>();   
+        this.instruccionesFunciones = new ArrayList<>();
+        this.dentroDeFuncion = false;
+        this.listaAct = null;
+	}
+
+    /**
+     * Método al que se llama automáticamente ante algún error sintactico.
+     **/ 
+    public void syntax_error(Symbol s){ 
+        erroresCom.add(new ErrorSintaxis("Sintactico","No se esperaba Componente",String.valueOf(s.left),String.valueOf(s.right),String.valueOf(s.value)));
+    }
+
+    /**
+     * Método al que se llama automáticamente ante algún error sintáctico 
+     * en el que ya no es posible una recuperación de errores.
+     **/ 
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{ 
+        erroresCom.add(new ErrorSintaxis("Sintactico","Error sintactico Irrecuperable",String.valueOf(s.left),String.valueOf(s.right),String.valueOf(s.value)));
+    }         
+    /*---------Getters & Setters---------*/
+
+    public List<ErrorSintaxis> getErroresCom(){
+        return this.erroresCom;
+    }
+
+    public List<Pista> getPistas(){
+        return this.pistas;
+    }
+    
+    /*---------Codigo Incrustado---------*/
+    private void MasIdent(String val){
+        int valor = Integer.parseInt(val);
+        this.cantidadIdentaciones += valor;
+    }
+
+    private void cerrarIdent(){
+        this.cantidadIdentaciones = 0;
+    }
+
+    private void crearPista(String nombre){
+        Pista pistaTmp = new Pista();
+        pistaTmp.setNombre(nombre);
+        this.pistas.add(pistaTmp);
+    }
+
+    private void agregarExtencion(String nombreExt){
+        this.pistas.get(this.pistas.size()-1).setExtension(nombreExt);
+    }
+
+    private void crearDeclaracion(boolean esKeep){
+        this.declaracionAct = new Declaracion("declaracion",this.cantidadIdentaciones);
+        this.declaracionAct.setEsKeep(esKeep);
+        insertarInstruccion(this.declaracionAct);
+    }
+
+    private void insertarValsDeclaracion(String tipo,String var1,boolean esArreglo){
+        this.declaracionAct.setTipoDecl(tipo);
+        this.declaracionAct.insertarVariable(var1);
+        this.declaracionAct.setEsArreglo(esArreglo);
+    }
+
+    private void insertarVarDecl(String variable){
+        this.declaracionAct.insertarVariable(variable);
+    }
+
+    private void insExpr(String val,String tipo){
+        Expresion expresion = new Expresion();
+        expresion.setTipo(tipo);
+        expresion.setValor(val);
+        if(this.esDimension){
+            dimesiones.peek().insertarExpresion(expresion);
+        }else{
+            this.valoresExpresion.add(expresion);
+        }
+    }
+
+    private void insExpr2(String val,String tipo){
+        Expresion expresion = new Expresion();
+        expresion.setTipo(tipo);
+        expresion.setValor(val);
+        if(this.esDimension){
+            dimesiones.peek().insertarExpresion(expresion);
+        }else{
+            this.valoresExpresion2.add(expresion);
+        }
+    }
+
+    private void crearListaExpr(){
+        this.valoresExpresion = new ArrayList<>();
+    }
+
+    private void crearDimension(){
+        Dimension dimension = new Dimension();   
+        dimesiones.push(dimension);
+        this.esDimension = true;
+    }
+
+    private void insertarListaExprDecl(){        
+        this.declaracionAct.setValoresDecl(this.valoresExpresion);
+    }
+
+    private void insertarDimensionDecl(){
+        this.declaracionAct.insertarDimension(this.dimesiones.peek());
+        this.dimesiones.pop();
+        cerrarDimension();
+    }
+
+    private void insertarDimensionExpr(){
+        this.expresionesArreglos.peek().insertarExpresion(this.dimesiones.peek());        
+        this.dimesiones.pop();
+        cerrarDimension();
+    }
+
+    private void cerrarExpresionArreglo(){
+        this.expresionesArreglos.pop();
+    }
+
+    private void cerrarDimension(){
+        if(this.dimesiones.isEmpty()){
+            this.esDimension = false;
+        }else{
+            this.esDimension = true;
+        }
+    }
+
+    private void crearExpresionArreglo(String tipo,String val){
+        Expresion expresion = new Expresion();
+        expresion.setTipo(tipo);
+        expresion.setValor(val);
+        if(this.esDimension){
+            dimesiones.peek().insertarExpresion(expresion);
+        }else{
+            this.valoresExpresion.add(expresion);
+        }
+        this.expresionesArreglos.push(expresion);
+    }    
+
+    private void crearExpresionArreglo2(String tipo,String val){
+        Expresion expresion = new Expresion();
+        expresion.setTipo(tipo);
+        expresion.setValor(val);
+        if(this.esDimension){
+            dimesiones.peek().insertarExpresion(expresion);
+        }else{
+            this.valoresExpresion2.add(expresion);
+        }
+        this.expresionesArreglos.push(expresion);
+    }
+
+    private void crearPrimDeclDim(){
+        this.declDimPadre = new DeclDim();
+        this.primerDeclDim = true;
+        this.declaracionAct.setDeclaracionDimension(this.declDimPadre);
+    }
+
+    private void crearDeclDim(){
+        if(this.primerDeclDim == true){
+            this.primerDeclDim = false;
+        }else{
+            DeclDim declDim = new DeclDim();
+            declDim.setDeclDimPadre(this.declDimPadre);
+            this.declDimPadre.insertarHijoDeclDim(declDim);
+            this.declDimPadre = declDim;    
+        }            
+    }
+
+    private void cerrarDeclDim(){
+        this.declDimPadre = this.declDimPadre.getDeclDimPadre();
+    }
+
+    private void crearDim(){
+        Dimension dimension = new Dimension();
+        this.valoresExpresion = new ArrayList<>();
+        dimension.setExpresiones(valoresExpresion);
+        this.declDimPadre.insertarDimension(dimension);
+    }
+
+    private void crearAsignacion(String variable, boolean esArreglo,boolean esPara,boolean esIncremento){
+        this.asignacionAct = new Asignacion("asignacion",this.cantidadIdentaciones);        
+        this.asignacionAct.setVariable(variable);
+        this.valoresExpresion = new ArrayList<>();
+        this.asignacionAct.setValoresDecl(this.valoresExpresion);
+        this.asignacionAct.setEsArreglo(esArreglo);
+        this.asignacionAct.setEsIncremento(esIncremento);
+        if(esPara){
+            this.paraAct.setAsignacion(this.asignacionAct);            
+        }else{
+            insertarInstruccion(this.asignacionAct);
+        }        
+    }
+
+    private void insertarDimensionAsign(){
+        this.asignacionAct.insertarDimension(this.dimesiones.peek());
+        this.dimesiones.pop();
+        cerrarDimension();
+    }
+
+    private void crearFuncion(String nombre,boolean esKeep,String tipo){
+        this.funcionAct = new Funcion("funcion",this.cantidadIdentaciones);
+        this.funcionAct.setNombre(nombre);
+        this.funcionAct.setTipo(tipo);
+        this.funcionAct.setEsKeep(esKeep);
+        insertarInstruccion(this.funcionAct);
+    }
+
+    private void insertarParametro(String tipo, String nombre){
+        Parametro parametro = new Parametro();
+        this.valoresExpresion = new ArrayList<>();
+        parametro.setNombre(nombre);
+        parametro.setTipo(tipo);
+        parametro.setExpresiones(this.valoresExpresion);
+        this.funcionAct.insertarParametro(parametro);
+    }
+
+    private void insertarParametro2(String tipo, String nombre){
+        Parametro parametro = new Parametro();
+        this.valoresExpresion2 = new ArrayList<>();
+        parametro.setNombre(nombre);
+        parametro.setTipo(tipo);
+        parametro.setExpresiones(this.valoresExpresion2);
+        this.funcionAct.insertarParametro(parametro);
+    }
+
+    private void crearSi(){
+        this.insCond = "condSi";
+        this.condisionSiAct = new CondSi("si",this.cantidadIdentaciones);   
+        insertarInstruccion(this.condisionSiAct);
+    }
+
+    private void crearSinoSi(){
+        this.insCond = "condSi";
+        this.condisionSiAct = new CondSi("sinosi",this.cantidadIdentaciones);      
+        insertarCondSINO(true);                
+    }
+    
+    private void crearSino(){
+        this.insCond = "condSi";
+        this.condisionSiAct = new CondSi("sino",this.cantidadIdentaciones);              
+        insertarCondSINO(false);            
+    }
+    
+    private void insertarCondSINO(boolean esSinoSi){
+        int tamano = this.instruccionesFunciones.size()-1;
+        for (int i = tamano; i >= 0; i--) {
+            Instruccion instruccionFun = this.instruccionesFunciones.get(this.instruccionesFunciones.size()-1);
+            if (instruccionFun.getTipoInstruccion().equals("si")) {
+                if (instruccionFun.getIdentacion() == 0) {
+                    CondSi condisionSi = (CondSi) instruccionFun;
+                    if (esSinoSi) {
+                        condisionSi.insertarCondicionSinoSi(this.condisionSiAct);
+                    }else{
+                        condisionSi.setCondsino(this.condisionSiAct);
+                    }                    
+                    insertarInstruccionEnFunciones(this.condisionSiAct);
+                    break;
+                }else{
+                    this.instruccionesFunciones.remove(this.instruccionesFunciones.size()-1);
+                }             
+            }else{
+                this.instruccionesFunciones.remove(this.instruccionesFunciones.size()-1);
+            }
+        }
+    }
+
+    private void crearCondicion(){
+        this.condicionAct = new Condicion();
+        this.valoresExpresion = new ArrayList<>();
+        this.condicionAct.setExpresion1(this.valoresExpresion);
+        switch(insCond)
+        {
+            case "condSi":
+                this.condisionSiAct.insertarCondicion(this.condicionAct);
+                break;
+            case "para":
+                this.paraAct.insertarCondicion(this.condicionAct);
+                break;
+            case "mientras":
+                this.mientrasAct.insertarCondicion(this.condicionAct);
+                break;
+            default:
+                
+        }                
+    }
+
+    private void crearExpr2Cond(){
+        this.valoresExpresion = new ArrayList<>();
+        this.condicionAct.setExpresion2(this.valoresExpresion);
+    }
+
+    private void insOpNulCondicion(String op1,String op2){
+        if(op1.equals("true")){
+            this.condicionAct.setNuloExpr1(true);
+        }else{
+            this.condicionAct.setNuloExpr1(false);
+        }
+        if(op2.equals("true")){
+            this.condicionAct.setNuloExpr2(true);
+        }else{
+            this.condicionAct.setNuloExpr2(false);
+        }
+    }
+
+    private void insOpCondicion(String operador){
+        switch(insCond)
+        {
+            case "condSi":
+                this.condisionSiAct.insertarOperador(operador);
+                break;
+            case "para":
+                this.paraAct.insertarOperador(operador);
+                break;
+            case "mientras":
+                this.mientrasAct.insertarOperador(operador);
+                break;
+            default:
+                
+        }
+    }
+
+    private void crearPara(){
+        this.insCond = "para";
+        this.paraAct = new Para("para",this.cantidadIdentaciones);
+        insertarInstruccion(this.paraAct);
+    }
+    
+    private void insUltValsPara(String variable,String operador){
+        this.paraAct.setVariable(variable);
+        this.paraAct.setOperadorVar(operador);
+    }
+
+    private void insertarMientras(){
+        this.insCond = "mientras";
+        if(desdesMientras.empty()){
+            this.mientrasAct = new Mientras("mientras",this.cantidadIdentaciones);
+            insertarInstruccion(this.mientrasAct);
+        }else{
+            this.mientrasAct = desdesMientras.peek();
+            desdesMientras.pop();
+        }
+    }
+
+    private void insertarHacer(){             
+        Mientras mientras = new Mientras("hacer",this.cantidadIdentaciones);
+        desdesMientras.push(mientras);
+        insertarInstruccion(mientras);
+    }
+
+    private void crearSwitch(){
+        this.switchAct = new SwitchC("switch",this.cantidadIdentaciones);        
+        this.valoresExpresion = new ArrayList<>();
+        this.switchAct.setVariable(this.valoresExpresion);
+        insertarInstruccion(this.switchAct);
+    }
+
+    private void crearCaso(String tipo){
+        CasoC caso = new CasoC("caso",this.cantidadIdentaciones);
+        this.valoresExpresion = new ArrayList<>();
+        caso.setTipo(tipo);        
+        caso.setExpresion(this.valoresExpresion);
+        int tamano = this.instruccionesFunciones.size()-1;
+        for (int i = tamano; i >= 0; i--) {
+            Instruccion instruccionFun = this.instruccionesFunciones.get(this.instruccionesFunciones.size()-1);
+            int identacion = caso.getIdentacion() - 1;
+            if (instruccionFun.getIdentacion() == identacion) {
+                if(instruccionFun.getTipoInstruccion().equals("switch")){
+                    SwitchC instruccionSwitch = (SwitchC) instruccionFun;
+                    instruccionSwitch.insertarCaso(caso);                    
+                    break;
+                }
+            }else{
+                this.instruccionesFunciones.remove(this.instruccionesFunciones.size()-1);
+            }
+        }
+        insertarInstruccionEnFunciones(caso);
+    }
+
+    private void crearIncDecr(String var, String tipo){
+        IncrDecr incrementoDecr = new IncrDecr("incrDecr",this.cantidadIdentaciones);
+        incrementoDecr.setTipo(tipo);
+        incrementoDecr.setVariable(var);
+        insertarInstruccion(incrementoDecr);
+    }
+
+    private void crearFuncExpresion(String nombre){
+        this.funcionAct = new Funcion("funcion",this.cantidadIdentaciones);
+        this.funcionAct.setNombre(nombre);
+        this.funcionAct.setTipo("");
+        this.funcionAct.setEsKeep(false);    
+        Expresion expresion = new Expresion();
+        expresion.setTipo("funcion");       
+        expresion.setFuncion(this.funcionAct); 
+        if(this.esDimension){
+            dimesiones.peek().insertarExpresion(expresion);
+        }else{
+            this.valoresExpresion.add(expresion);
+        }
+    }
+    
+    
+    private void insertarInstruccion(Instruccion instruccion){
+        if(this.instruccionesFunciones.isEmpty()){
+            this.pistas.get(this.pistas.size()-1).insertarInstruccion(instruccion);
+            insertarInstruccionEnFunciones(instruccion);
+            if (instruccion.getTipoInstruccion().equals("funcion")) {
+                this.dentroDeFuncion = true;
+            }else{
+                this.dentroDeFuncion = false;
+            }
+        }else{
+            int tamano = this.instruccionesFunciones.size()-1;
+            for (int i = tamano; i >= 0; i--) {
+                Instruccion instruccionFun = this.instruccionesFunciones.get(this.instruccionesFunciones.size()-1);
+                int identacion = instruccion.getIdentacion() - 1;
+                if (instruccionFun.getIdentacion() == 0) {
+                    //InsertarInstruccion en funcion
+                    String tipoInstruccion = instruccionFun.getTipoInstruccion();
+                    if (tipoInstruccion.equals("funcion")) {
+                        Funcion funcion = (Funcion) instruccionFun;
+                        funcion.insertarInstruccion(instruccion);
+                    }else if(tipoInstruccion.equals("si")||tipoInstruccion.equals("sino")||tipoInstruccion.equals("sinosi")){
+                        CondSi condicionSi = (CondSi) instruccionFun;
+                        condicionSi.insertarInstruccion(instruccion);
+                    }else if(tipoInstruccion.equals("para")){
+                        Para paraIns = (Para) instruccionFun;
+                        paraIns.insertarInstruccion(instruccion);
+                    }else if(tipoInstruccion.equals("mientras")){
+                        Mientras mientrasIns = (Mientras) instruccionFun;
+                        mientrasIns.insertarInstruccion(instruccion);
+                    }else if(tipoInstruccion.equals("hacer")){
+                        Mientras mientrasIns = (Mientras) instruccionFun;
+                        mientrasIns.insertarInstruccion(instruccion);
+                    }
+                    insertarInstruccionEnFunciones(instruccion);
+                    break;
+                }else{                    
+                    if(instruccionFun.getTipoInstruccion().equals("funcion")){
+                        this.dentroDeFuncion = false;
+                    }
+                    insertarInstruccionEnFunciones(instruccion);
+                    //this.instruccionesFunciones.remove(this.instruccionesFunciones.size()-1);
+                    /*if(i==0){
+                        this.pistas.get(this.pistas.size()-1).insertarInstruccion(instruccion);
+                        insertarInstruccionEnFunciones(instruccion);
+                    }*/
+                }
+            }
+        }
+    }
+    
+    private void insertarInstruccionEnFunciones(Instruccion instruccion){
+        String tipo = instruccion.getTipoInstruccion();
+        String[] funciones = new String[]{"si","sino","sinosi","funcion","para","mientras","hacer","continuar","switch","caso","principal"};
+        List<String> list = Arrays.asList(funciones);
+        if (list.contains(tipo)) {
+            if (tipo.equals("funcion")) {
+                if (this.dentroDeFuncion == false) {
+                    this.instruccionesFunciones.add(instruccion);
+                }
+            }else{
+                this.instruccionesFunciones.add(instruccion);
+            }            
+        }
+    }
+    
+    public Lista getLista(){
+        return this.listaAct;
+    }
+
+    private void creacionLista(){
+        this.listaAct = new Lista();
+    }
+
+    private void insertarDatoLista(String tipo,String val){
+        boolean valIns = false;
+        if(val.equals("true")){
+            valIns = true;
+        }
+        switch(tipo){
+            case "NOMBRE":
+                this.listaAct.setNombre(val.replace("\"", ""));
+                break;
+            case "RAMDOM":
+                this.listaAct.setRandom(valIns);
+                break;
+            case "CIRCULAR":
+                this.listaAct.setCircular(valIns);
+                break;
+        }
+    }    
+
+    private void insertarPistaLista(String valPista){
+        this.listaAct.insertarPista(valPista.replace("\"", ""));
+    }
+
+:}
+
+/* Terminals (tokens returned by the scanner). */
+terminal 	    PISTA,EXTIENDE,KEEP,VAR,ARREGLO,SI,SINO,SINOSI,SWITCH,CASO,COMENT;
+terminal        DEFAULT,PARA,MIENTRAS,HACER,CONTINUAR,RETORNA,REPRODUCIR,ESPERAR,SUMARIZAR,LONGITUD,MENSAJE;
+terminal        PRINCIPAL,LISTA,NOMBRE,RANDOM,CIRCULAR,PISTAS,SALIR,ENTEROSTR,DOBLESTR,BOOLEANSTR,CARACTERSTR,CADENASTR;
+terminal        OPINCR,OPDECR,OPSUMSIM,SUMA,RESTA,MULT,DIVI,OPMOD,OPELV,DOBIGUAL,DIFERENC,MAYIG,MENIG,OPNULO,MAY,MEN;
+terminal        NAND,NOR,XOR,AND,OR,OPNOT,PARI,PARD,BRACKI,BRACKD,LLAVEIZ,LLAVEDER,DOSPUNT,PUNTCOMA,COMA,IGUAL;
+
+terminal String ID,CADENA,CARACTER,NUMERO,VERDADERO,FALSO,NOTA;
+//IDENT
+
+
+/* Non-Terminals (created scanner). */
+non terminal  inicio,siguiente,ext,extp,decl,declp;
+non terminal  declp2,arrFin,expr1,tipoD,fin1,asgF;
+non terminal  op,arrFinP,arrFinP2,fin2,fin3,arr,arr2;
+non terminal  asg,arr3,funcion,par,fin4,condicional;
+non terminal  condicion,op3,opLog,op4,opNul,ciclo1;
+non terminal  op2,asg2,ciclo2,funciones2,funciones3;
+non terminal  cambiar,expr2,arr2p,fin1p,incrDecr;
+non terminal  funciones4,par2,expr3,fin5,fin6,arr3p;
+non terminal  tipoPara, ciclo3, funcion5, finfunc;
+non terminal  listas,datosLista,finlista,valoresLista,pistasLista;
+
+
+
+/* The grammar : */
+
+start with inicio;
+
+inicio ::= 
+    //    IDENT:val {:MasIdent(val);:} inicio
+        COMENT {:cerrarIdent();:}inicio
+    |   siguiente {:cerrarIdent();:} inicio LLAVEDER
+    |   decl {:cerrarIdent();:} PUNTCOMA inicio
+    |   asg {:cerrarIdent();:} PUNTCOMA inicio
+    |   funcion {:cerrarIdent();:} LLAVEIZ inicio LLAVEDER inicio
+    |   condicional {:cerrarIdent();:} LLAVEIZ inicio LLAVEDER inicio
+    |   ciclo1 {:cerrarIdent();:} LLAVEIZ inicio LLAVEDER inicio
+    |   ciclo2 {:cerrarIdent();:} LLAVEIZ inicio LLAVEDER ciclo3 inicio
+    |   CONTINUAR {:crearFuncion("continuar",false,"");:} PUNTCOMA inicio
+    |   funciones2 {:cerrarIdent();:} PUNTCOMA inicio
+    |   funciones3 {:cerrarIdent();:} PUNTCOMA inicio
+    |   funcion5 {:cerrarIdent();:} inicio
+    |   cambiar {:cerrarIdent();:} inicio    
+    |   incrDecr {:cerrarIdent();:} PUNTCOMA inicio    
+    |   listas
+    |   error inicio 
+    |   
+;
+
+siguiente ::=
+        PISTA ID:nom {:crearPista(nom);:}ext LLAVEIZ
+;
+
+ext ::=
+        EXTIENDE ID:nom {:agregarExtencion(nom);:} extp
+    |
+;
+
+extp ::=
+        COMA ID:nom {:agregarExtencion(nom);:} extp
+    |
+;
+
+decl ::=
+        KEEP {:crearDeclaracion(true);:}  declp
+    |   {:crearDeclaracion(false);:} declp
+;
+
+declp ::=
+        VAR tipoD:tip ID:id1 {:insertarValsDeclaracion(String.valueOf(tip),id1,false);:} declp2 asgF
+    |   VAR tipoD:tip ARREGLO ID:id1 {:insertarValsDeclaracion(String.valueOf(tip),id1,true);:} declp2 BRACKI {:crearDimension();:} expr1  {:insertarDimensionDecl();:} BRACKD arr arrFin
+;
+
+tipoD ::=
+        ENTEROSTR   {:RESULT="entero";:}
+    |   DOBLESTR    {:RESULT="doble";:}
+    |   BOOLEANSTR  {:RESULT="boolean";:}
+    |   CARACTERSTR {:RESULT="caracter";:}
+    |   CADENASTR   {:RESULT="cadena";:}
+;
+
+declp2 ::=
+        COMA ID:id1 {:insertarVarDecl(id1);:} declp2 
+    |   
+;
+
+arr ::=
+        BRACKI {:crearDimension();:} expr1  {:insertarDimensionDecl();:} BRACKD
+    |   
+;
+
+asgF ::=
+        IGUAL {:crearListaExpr();:} expr2 {:insertarListaExprDecl();:}
+    |   
+;
+
+expr1 ::=
+        ID:val {:insExpr(val,"identificador");:} fin1
+    |   ID:val BRACKI {:crearExpresionArreglo("arreglo",val);crearDimension();:} expr1  {:insertarDimensionExpr();:} BRACKD arr2 {:cerrarExpresionArreglo();:} fin1
+    |   NUMERO:val {:insExpr(val,"numero");:} fin1
+    |   CADENA:val {:insExpr(val,"cadena");:} fin1
+    |   CARACTER:val {:insExpr(val,"caracter");:} fin1
+    |   VERDADERO:val {:insExpr(val,"boolean");:} fin1
+    |   FALSO:val {:insExpr(val,"boolean");:} fin1
+    |   PARI {:insExpr("(","op");:} expr1 PARD {:insExpr(")","op");:} fin1
+    |   OPNOT {:insExpr("!","op");:} expr1 
+;
+
+arr2 ::=
+        BRACKI {:crearDimension();:} expr1  {:insertarDimensionExpr();:} BRACKD
+    |   
+;
+
+fin1 ::=
+        op:o {:insExpr(String.valueOf(o),"op");:} expr1    
+    |
+;
+
+expr2 ::=
+        ID:val {:insExpr(val,"identificador");:} fin1p
+    |   ID:val BRACKI {:crearExpresionArreglo("arreglo",val);crearDimension();:} expr2  {:insertarDimensionExpr();:} BRACKD arr2p {:cerrarExpresionArreglo();:} fin1p
+    |   NUMERO:val {:insExpr(val,"numero");:} fin1p
+    |   CADENA:val {:insExpr(val,"cadena");:} fin1p
+    |   CARACTER:val {:insExpr(val,"caracter");:} fin1p
+    |   VERDADERO:val {:insExpr(val,"boolean");:} fin1p
+    |   FALSO:val {:insExpr(val,"boolean");:} fin1p
+    |   PARI {:insExpr("(","op");:} expr2 PARD {:insExpr(")","op");:} fin1p
+    |   OPNOT {:insExpr("!","op");:} expr2 
+    |   funciones4
+;
+
+arr2p ::=
+        BRACKI {:crearDimension();:} expr2  {:insertarDimensionExpr();:} BRACKD
+    |   
+;
+
+fin1p ::=
+        op:o {:insExpr(String.valueOf(o),"op");:} expr2  
+    |   op3:o {:insExpr(String.valueOf(o),"op");:} expr2  
+    |   op4:o {:insExpr(String.valueOf(o),"op");:} expr2  
+    |
+;
+
+op ::=
+        SUMA    {:RESULT = "+";:}
+    |   RESTA   {:RESULT = "-";:}
+    |   MULT    {:RESULT = "*";:}
+    |   DIVI    {:RESULT = "/";:}
+    |   OPELV   {:RESULT = "^";:}
+    |   OPMOD   {:RESULT = "%";:}
+;
+
+arrFin ::=
+        IGUAL {:crearPrimDeclDim();:} arrFinP
+    |   
+;
+
+arrFinP ::=
+        LLAVEIZ {:crearDeclDim();:} arrFinP2 LLAVEDER {:cerrarDeclDim();:}
+    |   
+;
+
+arrFinP2 ::=
+        arrFinP fin2 
+    |   {:crearDim();:} expr1 fin3
+;
+
+fin2 ::=
+        COMA arrFinP
+    |
+;
+
+fin3 ::=
+        COMA {:crearDim();:} expr1 fin3
+    |   
+;
+
+asg ::=
+        ID:val {:crearAsignacion(val,false,false,true);:} OPSUMSIM expr2
+    |   ID:val {:crearAsignacion(val,false,false,false);:} IGUAL expr2
+    |   ID:val {:crearAsignacion(val,true,false,false);:} BRACKI {:crearDimension();:} expr1 {:insertarDimensionAsign();:} BRACKD arr3 IGUAL expr2
+;
+
+arr3 ::=
+        BRACKI {:crearDimension();:} expr1  {:insertarDimensionAsign();:} BRACKD
+    |   
+;
+
+funcion ::=
+            KEEP tipoD:tp ID:nom {:crearFuncion(nom,true,String.valueOf(tp));:} PARI par PARD
+        |   PRINCIPAL {:crearFuncion("principal",false,"");:} PARI PARD
+        |   KEEP PRINCIPAL {:crearFuncion("principal",true,"");:} PARI PARD 
+        |   tipoD:tp ID:nom {:crearFuncion(nom,false,String.valueOf(tp));:} PARI  par PARD
+;
+
+par ::=
+        tipoD:tp ID:nom {:insertarParametro(String.valueOf(tp),nom);:} fin4
+    |   {:insertarParametro("","");:} expr2 fin4
+    |
+;
+
+fin4 ::=
+        COMA par
+    |   
+;
+
+condicional::=
+        SWITCH {:crearSwitch();:} PARI expr1 PARD
+    |   SI PARI {:crearSi();crearCondicion();:} condicion PARD
+    |   SINOSI PARI {:crearSinoSi();crearCondicion();:} condicion PARD
+    |   SINO {:crearSino();:}
+;
+
+condicion ::=
+        opNul:op1 expr1 op3:opI {:insOpCondicion(String.valueOf(opI));:} opNul:op2 {:crearExpr2Cond();:} expr1 {:insOpNulCondicion(String.valueOf(op1),String.valueOf(op2));:} opLog
+    |   opNul:op1 expr1 {:insOpNulCondicion(String.valueOf(op1),"");:}
+    |   opNul:op1 expr1 op4:opI {:insOpCondicion(String.valueOf(opI));:} opNul:op2 {:crearExpr2Cond();:} expr1 {:insOpNulCondicion(String.valueOf(op1),String.valueOf(op2));:} opLog
+;
+
+opNul ::=
+        OPNULO {:RESULT = "true";:}
+    |   {:RESULT = "false";:}
+;
+
+op3 ::=
+        DOBIGUAL    {:RESULT = "==";:}
+    |   DIFERENC    {:RESULT = "!=";:}
+    |   MAY         {:RESULT = ">";:}
+    |   MEN         {:RESULT = "<";:}
+    |   MAYIG       {:RESULT = ">=";:}
+    |   MENIG       {:RESULT = "<=";:}
+;
+
+opLog ::=
+        op4:opI {:insOpCondicion(String.valueOf(opI));crearCondicion();:} condicion
+    |   
+;
+
+op4 ::=
+        AND     {:RESULT = "&&";:}
+    |   NAND    {:RESULT = "!&&";:}
+    |   OR      {:RESULT = "||";:}
+    |   XOR     {:RESULT = "&|";:}
+    |   NOR     {:RESULT = "!||";:}
+;
+
+ciclo1 ::=
+        PARA {:crearPara();:} PARI tipoPara asg2 PUNTCOMA {:crearCondicion();:} condicion PUNTCOMA ID:idV op2:opP {:insUltValsPara(idV,String.valueOf(opP));:} PARD
+    |   MIENTRAS {:insertarMientras();:} PARI {:crearCondicion();:} condicion PARD 
+;
+
+op2 ::=
+        OPINCR {:RESULT = "++";:}
+    |   OPDECR {:RESULT = "--";:}
+;
+
+asg2 ::=
+        ID:val {:crearAsignacion(val,false,true,true);:} OPSUMSIM expr1 
+    |   ID:val {:crearAsignacion(val,false,true,false);:} IGUAL expr1 
+    |   ID:val {:crearAsignacion(val,true,true,false);:} BRACKI {:crearDimension();:} expr1 {:insertarDimensionAsign();:} BRACKD arr3 IGUAL expr1
+;
+
+tipoPara ::=
+        tipoD
+    |   
+;
+
+ciclo2 ::=
+    HACER {:insertarHacer();:}
+;
+
+ciclo3 ::= 
+    MIENTRAS {:insertarMientras();:} PARI {:crearCondicion();:} condicion PARD
+;
+
+funciones2 ::=
+        SUMARIZAR {:crearFuncion("sumarizar",false,"");:} PARI par PARD
+    |   LONGITUD {:crearFuncion("longitud",false,"");:} PARI par PARD
+    |   MENSAJE {:crearFuncion("mensaje",false,"");:} PARI par PARD    
+;
+
+funciones3 ::=
+        REPRODUCIR {:crearFuncion("reproducir",false,"");:} PARI NOTA:nota {:insertarParametro("","");insExpr(nota,"nota");:} COMA par PARD
+    |   ESPERAR {:crearFuncion("esperar",false,"");:} PARI par PARD
+    |   RETORNA {:crearFuncion("retorna",false,"");insertarParametro("","");:} expr2
+   // |   ORDENAR {:crearFuncExpresion("longitud");:} PARI par2 PARD
+  //  |   KEEP PRINCIPAL {:crearFuncion("principal",true,"");:} PARI PARD
+
+;
+
+cambiar ::=
+        CASO {:crearCaso("normal");:} expr1 DOSPUNT
+    |   DEFAULT {:crearCaso("default");:} DOSPUNT
+    |   SALIR {:crearFuncion("salir",false,"");:} PUNTCOMA
+;
+
+incrDecr ::=
+        ID:val OPINCR {:crearIncDecr(val,"++");:}
+    |   ID:val OPDECR {:crearIncDecr(val,"--");:}
+;
+
+funciones4 ::=
+        PRINCIPAL {:crearFuncion("principal",false,"");:} PARI PARD
+    |   KEEP PRINCIPAL {:crearFuncion("principal",true,"");:} PARI PARD
+    |   ID:nom {:crearFuncExpresion(String.valueOf(nom));:} PARI par2 PARD
+    |   REPRODUCIR {:crearFuncExpresion("reproducir");:} PARI NOTA:nota {:insertarParametro2("","");insExpr2(nota,"nota");:} COMA par2 PARD
+    |   SUMARIZAR {:crearFuncExpresion("sumarizar");:} PARI par2 PARD
+    |   LONGITUD {:crearFuncExpresion("longitud");:} PARI par2 PARD
+;
+
+funcion5 ::= 
+        ID:nom {:crearFuncion(nom,false,"");:} PARI par PARD  finfunc
+;
+
+finfunc ::= 
+            LLAVEIZ inicio LLAVEDER
+        |   PUNTCOMA
+;
+
+
+par2 ::=
+        tipoD:tp ID:nom {:insertarParametro2(String.valueOf(tp),nom);:} fin5
+    |   {:insertarParametro2("","");:} expr3 fin5
+    |
+;
+
+fin5 ::=
+        COMA par2
+    |   
+;
+
+expr3 ::=
+        ID:val {:insExpr2(val,"identificador");:} fin6
+    |   ID:val BRACKI {:crearExpresionArreglo2("arreglo",val);crearDimension();:} expr3  {:insertarDimensionExpr();:} BRACKD arr3p {:cerrarExpresionArreglo();:} fin6
+    |   NUMERO:val {:insExpr2(val,"numero");:} fin6
+    |   CADENA:val {:insExpr2(val,"cadena");:} fin6
+    |   CARACTER:val {:insExpr2(val,"caracter");:} fin6
+    |   VERDADERO:val {:insExpr2(val,"boolean");:} fin6
+    |   FALSO:val {:insExpr2(val,"boolean");:} fin6
+    |   PARI {:insExpr2("(","op");:} expr3 PARD {:insExpr2(")","op");:} fin6
+    |   OPNOT {:insExpr2("!","op");:} expr3     
+;
+
+arr3p ::=
+        BRACKI {:crearDimension();:} expr3  {:insertarDimensionExpr();:} BRACKD
+    |   
+;
+
+fin6 ::=
+        op:o {:insExpr2(String.valueOf(o),"op");:} expr3
+    |   op3:o {:insExpr2(String.valueOf(o),"op");:} expr3
+    |   op4:o {:insExpr2(String.valueOf(o),"op");:} expr3  
+    |
+;
+
+listas ::=
+        LLAVEIZ LISTA DOSPUNT LLAVEIZ {:creacionLista();:} datosLista LLAVEDER LLAVEDER
+;
+
+datosLista ::=
+        NOMBRE DOSPUNT CADENA:val {:insertarDatoLista("NOMBRE",val);:} finlista
+    |   RANDOM DOSPUNT valoresLista:val {:insertarDatoLista("RAMDOM",String.valueOf(val));:} finlista
+    |   CIRCULAR DOSPUNT valoresLista:val {:insertarDatoLista("CIRCULAR",String.valueOf(val));:} finlista
+    |   PISTAS DOSPUNT BRACKI pistasLista BRACKD finlista
+    //|   IDENT datosLista
+
+;
+
+finlista ::=
+        COMA datosLista
+    |   
+;
+
+valoresLista ::=
+        VERDADERO:val {:RESULT = "true";:}
+    |   FALSO:val {:RESULT = "false";:}
+;
+
+pistasLista ::=
+        ID:val {:insertarPistaLista(val);:} COMA pistasLista
+    |   ID:val {:insertarPistaLista(val);:}
+;

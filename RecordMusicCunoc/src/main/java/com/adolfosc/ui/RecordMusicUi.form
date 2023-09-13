@@ -58,7 +58,7 @@
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>
-    <Property name="title" type="java.lang.String" value="Music Record Compi 2 2021"/>
+    <Property name="title" type="java.lang.String" value="Music Record Compi 2 2023"/>
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="menuBar" type="java.lang.String" value="jMenuBar1"/>

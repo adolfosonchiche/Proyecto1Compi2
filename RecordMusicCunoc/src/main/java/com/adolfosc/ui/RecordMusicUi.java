@@ -175,7 +175,7 @@ public class RecordMusicUi extends javax.swing.JFrame {
         munuAyuda = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Music Record Compi 2 2021");
+        setTitle("Music Record Compi 2 2023");
 
         jLabel5.setText("Lista de Pistas");
 

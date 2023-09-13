@@ -1,0 +1,186 @@
+package com.adolfosc.analizadores.conexion;
+
+import java_cup.runtime.*;
+import java.util.ArrayList;
+import java.util.List;
+import com.adolfosc.analizadores.ErrorSintaxis;
+import com.adolfosc.modelo.conexion.Dato;
+import com.adolfosc.modelo.conexion.Solicitud;
+import com.adolfosc.modelo.conexion.Respuesta;
+import com.adolfosc.modelo.conexion.CantidadRespuesta;
+import com.adolfosc.modelo.music.Nota;
+
+parser code {:
+
+    private List<ErrorSintaxis> erroresCom; 
+    private Solicitud solicitudAct;
+    private Dato datoAct;
+    private Respuesta respuestaAct;
+
+	public ConexionParser(ConexionLexer lex) {
+		super(lex);
+        this.erroresCom = lex.getErroresCom();
+	}
+
+    /**
+     * Método al que se llama automáticamente ante algún error sintactico.
+     **/ 
+    public void syntax_error(Symbol s){ 
+        erroresCom.add(new ErrorSintaxis("Sintactico","No se esperaba Componente",String.valueOf(s.left),String.valueOf(s.right),String.valueOf(s.value)));
+    }
+
+    /**
+     * Método al que se llama automáticamente ante algún error sintáctico 
+     * en el que ya no es posible una recuperación de errores.
+     **/ 
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{ 
+        erroresCom.add(new ErrorSintaxis("Sintactico","Error sintactico Irrecuperable",String.valueOf(s.left),String.valueOf(s.right),String.valueOf(s.value)));
+    }         
+    /*---------Getters & Setters---------*/
+
+    public List<ErrorSintaxis> getErrorSintaxis(){
+        return this.erroresCom;
+    }
+
+    private void crearSolicitud(){
+        this.solicitudAct = new Solicitud();
+    }
+
+    private void insertarValsSolicitud(String tipo,String nombre){
+        this.solicitudAct.setTipo(tipo);
+        this.solicitudAct.setNombre(nombre);
+    }
+
+    private void insertarDato(){
+        datoAct = new Dato();
+        this.solicitudAct.insertarDato(datoAct);
+    }
+
+    private void insertarNombreSolicitud(String nombre){
+        this.solicitudAct.setNombre(nombre);
+    }
+
+    private void insertarEnDato(String valor, String tipo){
+        switch(tipo){
+            case "CANAL":
+                this.datoAct.setCanal(valor);
+                break;
+            case "NOTA":
+                this.datoAct.setNota(valor);
+                break;
+            case "OCTAVA":
+                this.datoAct.setOctava(valor);
+                break;
+            case "DURACION":
+                this.datoAct.setDuracion(valor);
+                break;
+        }
+    }
+
+    public Solicitud getSolicitud(){
+        return this.solicitudAct;
+    }
+
+    private void crearRespuesta(String tipo,String nombV){
+        this.respuestaAct = new Respuesta();        
+        this.respuestaAct.setTipo(tipo);
+        this.respuestaAct.setNombV(nombV);
+    }
+
+    private void insertarCantidadRespuesta(String nombre,String cantidad){
+        CantidadRespuesta valor = new CantidadRespuesta();
+        valor.setNombre(nombre);
+        valor.setCantidad(cantidad);
+        this.respuestaAct.insertarValor(valor);
+    }
+
+    private void insertarNota(String nombre, String octava, String tiempo, String canal){
+        //La frecuencia es la octava
+        //String nom = nombre.replace("\"","")
+        int o = Integer.parseInt(octava);
+        int t = Integer.parseInt(tiempo);
+        int c = Integer.parseInt(canal);
+        Nota nota = new Nota(nombre,o,t,c);
+
+        this.respuestaAct.insertarNota(nota);
+    }
+
+    public Respuesta getRespuesta(){
+        return this.respuestaAct;
+    }
+:}
+
+/* Terminals (tokens returned by the scanner). */
+terminal 	    MAY,MEN,IGUAL,BARRA;
+terminal        LISTA,PISTA,PISTAS,LISTAS,SOLICITUD,TIPO,NOMBRE,ALEATORIA,PISTANUEVA;
+terminal        DURACION,CANAL,NUMEROSTR,FRECUENCIA,RESPUESTA,OCTAVA,NOTA,DATOS;
+
+terminal String CADENA,NUMERO;
+
+
+
+/* Non-Terminals (created scanner). */
+non terminal  inicio,solicitudes,respuestas,nombres,datosN,datos2;
+non terminal  pistas,pista,notas,listas,pistas2;
+
+
+
+/* The grammar : */
+
+start with inicio;
+
+inicio ::= 
+        MEN SOLICITUD MAY {:crearSolicitud();:} solicitudes
+    |   MEN RESPUESTA MAY respuestas MEN BARRA RESPUESTA MAY
+;
+
+solicitudes ::=
+        MEN TIPO MAY LISTA MEN BARRA TIPO MAY nombres:nom MEN BARRA SOLICITUD MAY {:insertarValsSolicitud("LISTA", String.valueOf(nom));:}
+    |   MEN TIPO MAY PISTA MEN BARRA TIPO MAY nombres:nom MEN BARRA SOLICITUD MAY {:insertarValsSolicitud("PISTA", String.valueOf(nom));:}
+    |   MEN TIPO MAY PISTANUEVA MEN BARRA TIPO MAY {:insertarValsSolicitud("PISTANUEVA", "");:} datosN 
+;
+
+nombres ::=
+        MEN NOMBRE MAY CADENA:cad MEN BARRA NOMBRE MAY {:RESULT = cad;:}
+;
+
+datosN ::=
+        MEN DATOS MAY {:insertarDato();:} datos2
+    |   MEN NOMBRE MAY CADENA:nom MEN BARRA NOMBRE MAY {:insertarNombreSolicitud(nom);:} datosN
+    |   MEN BARRA SOLICITUD MAY
+;
+
+datos2 ::=
+        MEN CANAL MAY NUMERO:val MEN BARRA CANAL MAY {:insertarEnDato(val,"CANAL");:} datos2
+    |   MEN NOTA MAY CADENA:val MEN BARRA NOTA MAY {:insertarEnDato(val,"NOTA");:} datos2
+    |   MEN OCTAVA MAY NUMERO:val MEN BARRA OCTAVA MAY {:insertarEnDato(val,"OCTAVA");:} datos2
+    |   MEN DURACION MAY NUMERO:val MEN BARRA DURACION MAY {:insertarEnDato(val,"DURACION");:} datos2    
+    |   MEN BARRA DATOS MAY datosN
+;
+
+respuestas ::=
+        MEN PISTAS MAY {:crearRespuesta("pistas","");:} pistas      
+    |   MEN PISTA NOMBRE IGUAL CADENA:val MAY {:crearRespuesta("pista",val);:} pista 
+    |   MEN LISTAS MAY {:crearRespuesta("listas","");:} listas
+    |   MEN LISTA NOMBRE IGUAL CADENA:val ALEATORIA IGUAL CADENA {:crearRespuesta("lista",val);:} MAY pistas2
+;
+
+pistas ::=
+        MEN PISTA NOMBRE IGUAL CADENA:nom DURACION IGUAL NUMERO:cant MAY {:insertarCantidadRespuesta(nom,cant);:} pistas
+    |   MEN BARRA PISTAS MAY   
+;
+
+pista ::=
+        MEN NOTA NOMBRE IGUAL CADENA:n DURACION IGUAL NUMERO:t FRECUENCIA IGUAL NUMERO:o CANAL IGUAL NUMERO:c MAY {:insertarNota(n,o,t,c);:} pista
+    |   MEN BARRA PISTA MAY  
+;
+
+listas ::=
+        MEN LISTA NOMBRE IGUAL CADENA:nom PISTAS IGUAL NUMERO:cant MAY {:insertarCantidadRespuesta(nom,cant);:} listas
+    |   MEN BARRA LISTAS MAY
+;
+
+pistas2 ::=
+        MEN PISTA NOMBRE IGUAL CADENA:nom MAY {:insertarCantidadRespuesta(nom,"0");:} pistas2
+    |   MEN BARRA LISTA MAY   
+;
