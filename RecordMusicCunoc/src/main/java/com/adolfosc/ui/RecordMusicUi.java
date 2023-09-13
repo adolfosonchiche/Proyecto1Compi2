@@ -168,6 +168,7 @@ public class RecordMusicUi extends javax.swing.JFrame {
         jMenuBar1 = new javax.swing.JMenuBar();
         menuFile = new javax.swing.JMenu();
         jmOpenFile = new javax.swing.JMenuItem();
+        jmiNuevo = new javax.swing.JMenuItem();
         mItemSave = new javax.swing.JMenuItem();
         jmItemSalir = new javax.swing.JMenuItem();
         menuReportes = new javax.swing.JMenu();
@@ -345,8 +346,11 @@ public class RecordMusicUi extends javax.swing.JFrame {
         jtpEditor.addTab("Biblioteca", jPanel1);
 
         jtxtOuputPista.setColumns(20);
+        jtxtOuputPista.setForeground(new java.awt.Color(255, 255, 255));
         jtxtOuputPista.setRows(5);
+        jtxtOuputPista.setDisabledTextColor(new java.awt.Color(255, 51, 51));
         jtxtOuputPista.setEnabled(false);
+        jtxtOuputPista.setOpaque(false);
         jScrollPane2.setViewportView(jtxtOuputPista);
 
         jlbLineaPista.setText("Linea:  1");
@@ -428,6 +432,7 @@ public class RecordMusicUi extends javax.swing.JFrame {
 
         jtxtOuputLista.setColumns(20);
         jtxtOuputLista.setRows(5);
+        jtxtOuputLista.setDisabledTextColor(new java.awt.Color(255, 51, 51));
         jtxtOuputLista.setEnabled(false);
         jScrollPane5.setViewportView(jtxtOuputLista);
 
@@ -519,7 +524,7 @@ public class RecordMusicUi extends javax.swing.JFrame {
         });
 
         progressBar.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
-        progressBar.setCursor(new java.awt.Cursor(java.awt.Cursor.MOVE_CURSOR));
+        progressBar.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
 
         btnStop.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -576,7 +581,7 @@ public class RecordMusicUi extends javax.swing.JFrame {
 
         menuFile.setText("Archivo");
 
-        jmOpenFile.setText("Open File");
+        jmOpenFile.setText("Abrir archivo");
         jmOpenFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jmOpenFileActionPerformed(evt);
@@ -584,7 +589,15 @@ public class RecordMusicUi extends javax.swing.JFrame {
         });
         menuFile.add(jmOpenFile);
 
-        mItemSave.setText("Save");
+        jmiNuevo.setText("Nuevo");
+        jmiNuevo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jmiNuevoActionPerformed(evt);
+            }
+        });
+        menuFile.add(jmiNuevo);
+
+        mItemSave.setText("Guardar");
         mItemSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mItemSaveActionPerformed(evt);
@@ -592,7 +605,7 @@ public class RecordMusicUi extends javax.swing.JFrame {
         });
         menuFile.add(mItemSave);
 
-        jmItemSalir.setText("Exit");
+        jmItemSalir.setText("Salir");
         jmItemSalir.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jmItemSalirActionPerformed(evt);
@@ -633,16 +646,17 @@ public class RecordMusicUi extends javax.swing.JFrame {
     private void btnCompilarPistaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCompilarPistaActionPerformed
         this.jtxtOuputPista.setText("");
         CompilarCodigo compilar = new CompilarCodigo();
-        compilar.compilar(jtpEditPista.getText(), lista, errores, codigoCargado, this.notasPistaRep,
-                this.mensajes, jtxtOuputPista, false);
+        compilar.compilar(this.jtpEditPista.getText(), this.lista, this.errores, this.codigoCargado, this.notasPistaRep,
+                this.mensajes, this.jtxtOuputPista, false);
+        this.cargaPistaService.cargarPistas(this.jtableListaPista);        
     }//GEN-LAST:event_btnCompilarPistaActionPerformed
 
     private void btnCompilarListaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCompilarListaActionPerformed
-        // TODO add your handling code here:
         this.jtxtOuputLista.setText("");
         CompilarCodigo compilar = new CompilarCodigo();
-        compilar.compilar(jtpEditLista.getText(), lista, errores, codigoCargado, this.notasPistaRep,
-                this.mensajes, jtxtOuputLista, true);
+        compilar.compilar(this.jtpEditLista.getText(), this.lista, this.errores, this.codigoCargado, this.notasPistaRep,
+                this.mensajes, this.jtxtOuputLista, true);
+        this.cargarListaServie.cargarListas(jlistListaReproduccion);
     }//GEN-LAST:event_btnCompilarListaActionPerformed
 
     private void jmOpenFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmOpenFileActionPerformed
@@ -797,7 +811,7 @@ public class RecordMusicUi extends javax.swing.JFrame {
     }//GEN-LAST:event_btnReproducirPistaActionPerformed
 
     private void btnModificarPistaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnModificarPistaActionPerformed
-        this.cargaPistaService.cargarPistaParaModificar(jtableListaPista, codigoCargado, jtpEditPista);
+        this.codigoCargado = this.cargaPistaService.cargarPistaParaModificar(this.jtableListaPista, this.codigoCargado, this.jtpEditPista);
     }//GEN-LAST:event_btnModificarPistaActionPerformed
 
     private void btnEliminarPistaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarPistaActionPerformed
@@ -826,8 +840,17 @@ public class RecordMusicUi extends javax.swing.JFrame {
     }//GEN-LAST:event_btnEliminarListaActionPerformed
 
     private void btnModificarListaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnModificarListaActionPerformed
-        this.cargarListaServie.cargarListaParaModificar(jlistListaReproduccion, codigoCargado, jtpEditLista);
+        this.codigoCargado = this.cargarListaServie.cargarListaParaModificar(this.jlistListaReproduccion, this.codigoCargado, this.jtpEditLista);
     }//GEN-LAST:event_btnModificarListaActionPerformed
+
+    private void jmiNuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiNuevoActionPerformed
+        // TODO add your handling code here:
+        this.jtpEditLista.setText("");
+        this.jtpEditPista.setText("");
+        this.jtxtOuputLista.setText("");
+        this.jtxtOuputPista.setText("");
+        this.codigoCargado = false;
+    }//GEN-LAST:event_jmiNuevoActionPerformed
 
     private void escanear(JTextPane jTextPane) {
         try {
@@ -907,6 +930,7 @@ public class RecordMusicUi extends javax.swing.JFrame {
     private javax.swing.JList<String> jlistListaReproduccion;
     private javax.swing.JMenuItem jmItemSalir;
     private javax.swing.JMenuItem jmOpenFile;
+    private javax.swing.JMenuItem jmiNuevo;
     private javax.swing.JPanel jpGrafica;
     private javax.swing.JTable jtableListaPista;
     private javax.swing.JTextPane jtpEditLista;

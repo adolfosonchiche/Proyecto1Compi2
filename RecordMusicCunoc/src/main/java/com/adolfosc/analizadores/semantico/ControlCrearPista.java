@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  *
  * @author hectoradolfo
@@ -831,8 +833,10 @@ public class ControlCrearPista {
             for (Dimension dimension : dimensiones) {
                 List<Expresion> expresiones = dimension.getExpresiones();
                 String val = obtenerValor(expresiones);
-                int valDim = Integer.parseInt(val);
-                dimen.add(valDim);
+                if (!val.equals("")) {
+                    int valDim = Integer.parseInt(val);
+                    dimen.add(valDim);
+                }                
             }
             String valor = "nulo";
             List<String> variables = declaracion.getVariables();
@@ -1034,6 +1038,7 @@ public class ControlCrearPista {
                 errores = parser.getErroresCom();
                 valor = parser.getExpresionResp();
             } catch (Exception ex) {
+                Logger.getLogger(ControlCrearPista.class.getName()).log(Level.SEVERE, null, ex);
                 System.out.println("Error irrecuperable");
                 System.out.println("Causa: " + ex.getCause());
                 System.out.println("Causa2: " + ex.toString());
@@ -1049,6 +1054,7 @@ public class ControlCrearPista {
             }
         } catch (Exception e) {
             System.out.println(e);
+            Logger.getLogger(ControlCrearPista.class.getName()).log(Level.SEVERE, null, e);
         }
         return valR;
     }

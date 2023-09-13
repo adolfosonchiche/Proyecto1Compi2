@@ -37,7 +37,7 @@ public class CargarListaService {
         }
     }
     
-    public void cargarListaParaModificar(JList<String> listaR, boolean codigoCargado,
+    public boolean cargarListaParaModificar(JList<String> listaR, boolean codigoCargado,
             JTextPane editorLista ) {
         
         try {
@@ -56,14 +56,17 @@ public class CargarListaService {
             }
             if (listaM == null) {
                 JOptionPane.showMessageDialog(null, "La lista no se encuentra", "Info", JOptionPane.ERROR_MESSAGE);
+                return false;
             } else {
                 editorLista.setText("");
                 editorLista.setText(listaM.getCodigo());
                 codigoCargado = true;
                 JOptionPane.showMessageDialog(null, "El codigo ha sido cargado", "Info", JOptionPane.INFORMATION_MESSAGE);
+                return true;
             }
         } catch (Exception e) {
         }
+        return false;
     }
     
     

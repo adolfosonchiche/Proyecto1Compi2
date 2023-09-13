@@ -51,7 +51,7 @@ public class CargarPistaService {
         }
     }
     
-    public void cargarPistaParaModificar(JTable listaPista, boolean codigoCargado,
+    public boolean cargarPistaParaModificar(JTable listaPista, boolean codigoCargado,
             JTextPane editorPista ) {
         //TODO Modificar
         //Traer el codigo de la pista y mostrarlo en el edit text
@@ -65,11 +65,14 @@ public class CargarPistaService {
                 editorPista.setText(codigoPista);
                 codigoCargado = true;
                 JOptionPane.showMessageDialog(null, "El codigo ha sido cargado", "Info", JOptionPane.INFORMATION_MESSAGE);
+                return true;
             } else {
                 JOptionPane.showMessageDialog(null, codigoPista, "Info", JOptionPane.ERROR_MESSAGE);
+                return false;
             }
         } catch (Exception e) {
         }
+        return false;
     }
     
     private String getModificar(String nombre) {
