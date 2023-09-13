@@ -7,7 +7,6 @@ import android.widget.AdapterView.OnItemClickListener
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.ListView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.adolfosc.conexion_socket.service.CompilarService
 import com.adolfosc.modelo.conexion.CantidadRespuesta
@@ -29,7 +28,7 @@ class ActivityTrackList : AppCompatActivity(), Runnable {
     private var datos: List<CantidadRespuesta>? = null
     var text = "";
 
-    private val host = "192.168.1.115" //IP DE LA COMPUTADORA O SERVIDOR 192.168.1.115
+    private var host = "192.168.1.115" //IP DE LA COMPUTADORA O SERVIDOR 192.168.1.115
     private val port = 5000
     private var thread: Thread? = null
     private var inp: DataInputStream? = null
@@ -46,7 +45,8 @@ class ActivityTrackList : AppCompatActivity(), Runnable {
 
         //obtener datos del activity anterior
         var mensaje = intent.getStringExtra("mensaje")
-        println(mensaje)
+        this.host = intent.getStringExtra("host").toString()
+        println(this.host)
         mensajeRecivid = mensaje
         mostrarPistas()
 
@@ -129,14 +129,15 @@ class ActivityTrackList : AppCompatActivity(), Runnable {
             var mensajeRe: String = inp!!.readUTF()
             sc.close()
 
-            val optmin = Intent(this, ActivityTrackPlayer::class.java)
-            optmin.putExtra("mensaje", mensajeRe)
-            optmin.putExtra("pista", text)
+            val intent = Intent(this, ActivityTrackPlayer::class.java)
+            intent.putExtra("mensaje", mensajeRe)
+            intent.putExtra("pista", text)
+           // intent.putExtra("host", this.host)
             //finish()
             //this.thread!!.stop()
-            startActivity(optmin)
+            startActivity(intent)
         } catch (e: IOException) {
-            Toast.makeText(this, "error en conexion Conexion$e", Toast.LENGTH_LONG).show()
+           // Toast.makeText(this, "error en conexion Conexion$e", Toast.LENGTH_LONG).show()
             println("no hay red disponible....$e")
         }
         // Inicia la segunda actividad cuando se produce un evento (por ejemplo, clic en un botón)

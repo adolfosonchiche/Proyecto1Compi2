@@ -307,7 +307,7 @@ parser code {:
         for (int i = tamano; i >= 0; i--) {
             Instruccion instruccionFun = this.instruccionesFunciones.get(this.instruccionesFunciones.size()-1);
             if (instruccionFun.getTipoInstruccion().equals("si")) {
-                if (instruccionFun.getIdentacion() == this.condisionSiAct.getIdentacion()) {
+                if (instruccionFun.getIdentacion() == 0) {
                     CondSi condisionSi = (CondSi) instruccionFun;
                     if (esSinoSi) {
                         condisionSi.insertarCondicionSinoSi(this.condisionSiAct);
@@ -474,7 +474,7 @@ parser code {:
             for (int i = tamano; i >= 0; i--) {
                 Instruccion instruccionFun = this.instruccionesFunciones.get(this.instruccionesFunciones.size()-1);
                 int identacion = instruccion.getIdentacion() - 1;
-                if (instruccionFun.getIdentacion() == identacion) {
+                if (instruccionFun.getIdentacion() == 0) {
                     //InsertarInstruccion en funcion
                     String tipoInstruccion = instruccionFun.getTipoInstruccion();
                     if (tipoInstruccion.equals("funcion")) {
@@ -499,11 +499,12 @@ parser code {:
                     if(instruccionFun.getTipoInstruccion().equals("funcion")){
                         this.dentroDeFuncion = false;
                     }
-                    this.instruccionesFunciones.remove(this.instruccionesFunciones.size()-1);
-                    if(i==0){
+                    insertarInstruccionEnFunciones(instruccion);
+                    //this.instruccionesFunciones.remove(this.instruccionesFunciones.size()-1);
+                    /*if(i==0){
                         this.pistas.get(this.pistas.size()-1).insertarInstruccion(instruccion);
                         insertarInstruccionEnFunciones(instruccion);
-                    }
+                    }*/
                 }
             }
         }
@@ -563,8 +564,8 @@ terminal        PRINCIPAL,LISTA,NOMBRE,RANDOM,CIRCULAR,PISTAS,SALIR,ENTEROSTR,DO
 terminal        OPINCR,OPDECR,OPSUMSIM,SUMA,RESTA,MULT,DIVI,OPMOD,OPELV,DOBIGUAL,DIFERENC,MAYIG,MENIG,OPNULO,MAY,MEN;
 terminal        NAND,NOR,XOR,AND,OR,OPNOT,PARI,PARD,BRACKI,BRACKD,LLAVEIZ,LLAVEDER,DOSPUNT,PUNTCOMA,COMA,IGUAL;
 
-terminal String IDENT,ID,CADENA,CARACTER,NUMERO,VERDADERO,FALSO,NOTA;
-
+terminal String ID,CADENA,CARACTER,NUMERO,VERDADERO,FALSO,NOTA;
+//IDENT
 
 
 /* Non-Terminals (created scanner). */
@@ -586,8 +587,8 @@ non terminal  listas,datosLista,finlista,valoresLista,pistasLista;
 start with inicio;
 
 inicio ::= 
-        IDENT:val {:MasIdent(val);:} inicio
-    |   COMENT {:cerrarIdent();:}inicio
+    //    IDENT:val {:MasIdent(val);:} inicio
+        COMENT {:cerrarIdent();:}inicio
     |   siguiente {:cerrarIdent();:} inicio LLAVEDER
     |   decl {:cerrarIdent();:} PUNTCOMA inicio
     |   asg {:cerrarIdent();:} PUNTCOMA inicio
@@ -921,7 +922,7 @@ datosLista ::=
     |   RANDOM DOSPUNT valoresLista:val {:insertarDatoLista("RAMDOM",String.valueOf(val));:} finlista
     |   CIRCULAR DOSPUNT valoresLista:val {:insertarDatoLista("CIRCULAR",String.valueOf(val));:} finlista
     |   PISTAS DOSPUNT BRACKI pistasLista BRACKD finlista
-    |   IDENT datosLista
+    //|   IDENT datosLista
 
 ;
 

@@ -536,30 +536,6 @@ public class CompiladorLexer implements java_cup.runtime.Scanner {
         return erroresCom;
     }
 
-    private int verificarIdentacion(String valor){
-        for(char c : valor.toCharArray()) {
-            if(c == '\n'){
-                this.identCant = 0;
-                identar = true;
-            } else if (c == ' ' || c == 32) {
-                this.identCant++;
-            } else if (c == '\t') {
-                this.identCant += 4;
-            } else {
-                identar = false;
-            }
-        } 
-        if(identar == true && this.identCant != 0){
-            int cantidadIdent = 0;
-            while(this.identCant >= 4){
-                cantidadIdent++;
-                this.identCant = this.identCant - 4; 
-            }
-            this.identCant = 0;
-            return cantidadIdent;
-        }
-        return -1;
-    }
 
 
   /**
@@ -976,372 +952,372 @@ public class CompiladorLexer implements java_cup.runtime.Scanner {
             // fall through
           case 76: break;
           case 2:
-            { int val = verificarIdentacion(yytext()); if(val >= 1){return new Symbol(Sym.IDENT,yyline+1,yycolumn+1, String.valueOf(val));}
+            { /* int val =  if(val >= 1){return new Symbol(Sym.IDENT,yyline+1,yycolumn+1, String.valueOf(val));} */
             }
             // fall through
           case 77: break;
           case 3:
-            { verificarIdentacion(yytext());return new Symbol(Sym.OPNOT,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.OPNOT,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 78: break;
           case 4:
-            { verificarIdentacion(yytext());return new Symbol(Sym.OPMOD,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.OPMOD,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 79: break;
           case 5:
-            { verificarIdentacion(yytext());return new Symbol(Sym.PARI,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.PARI,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 80: break;
           case 6:
-            { verificarIdentacion(yytext());return new Symbol(Sym.PARD,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.PARD,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 81: break;
           case 7:
-            { verificarIdentacion(yytext());return new Symbol(Sym.MULT,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.MULT,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 82: break;
           case 8:
-            { verificarIdentacion(yytext());return new Symbol(Sym.SUMA,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.SUMA,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 83: break;
           case 9:
-            { verificarIdentacion(yytext());return new Symbol(Sym.COMA,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.COMA,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 84: break;
           case 10:
-            { verificarIdentacion(yytext());return new Symbol(Sym.RESTA,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.RESTA,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 85: break;
           case 11:
-            { verificarIdentacion(yytext());return new Symbol(Sym.DIVI,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.DIVI,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 86: break;
           case 12:
-            { verificarIdentacion(yytext());return new Symbol(Sym.NUMERO,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.NUMERO,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 87: break;
           case 13:
-            { verificarIdentacion(yytext());return new Symbol(Sym.DOSPUNT,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.DOSPUNT,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 88: break;
           case 14:
-            { verificarIdentacion(yytext());return new Symbol(Sym.PUNTCOMA,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.PUNTCOMA,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 89: break;
           case 15:
-            { verificarIdentacion(yytext());return new Symbol(Sym.MEN,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.MEN,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 90: break;
           case 16:
-            { verificarIdentacion(yytext());return new Symbol(Sym.IGUAL,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.IGUAL,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 91: break;
           case 17:
-            { verificarIdentacion(yytext());return new Symbol(Sym.MAY,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.MAY,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 92: break;
           case 18:
-            { verificarIdentacion(yytext());return new Symbol(Sym.ID,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.ID,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 93: break;
           case 19:
-            { verificarIdentacion(yytext());return new Symbol(Sym.BRACKI,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.BRACKI,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 94: break;
           case 20:
-            { verificarIdentacion(yytext());return new Symbol(Sym.BRACKD,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.BRACKD,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 95: break;
           case 21:
-            { verificarIdentacion(yytext());return new Symbol(Sym.OPELV,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.OPELV,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 96: break;
           case 22:
-            { verificarIdentacion(yytext());return new Symbol(Sym.LLAVEIZ,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.LLAVEIZ,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 97: break;
           case 23:
-            { verificarIdentacion(yytext());return new Symbol(Sym.LLAVEDER,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.LLAVEDER,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 98: break;
           case 24:
-            { verificarIdentacion(yytext());return new Symbol(Sym.OPNULO,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.OPNULO,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 99: break;
           case 25:
-            { verificarIdentacion(yytext());return new Symbol(Sym.DIFERENC,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.DIFERENC,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 100: break;
           case 26:
-            { verificarIdentacion(yytext());return new Symbol(Sym.CADENA,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.CADENA,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 101: break;
           case 27:
-            { verificarIdentacion(yytext());return new Symbol(Sym.AND,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.AND,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 102: break;
           case 28:
-            { verificarIdentacion(yytext());return new Symbol(Sym.XOR,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.XOR,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 103: break;
           case 29:
-            { verificarIdentacion(yytext());return new Symbol(Sym.OPINCR,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.OPINCR,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 104: break;
           case 30:
-            { verificarIdentacion(yytext());return new Symbol(Sym.OPSUMSIM,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.OPSUMSIM,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 105: break;
           case 31:
-            { verificarIdentacion(yytext());return new Symbol(Sym.OPDECR,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.OPDECR,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 106: break;
           case 32:
-            { verificarIdentacion(yytext());return new Symbol(Sym.MENIG,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.MENIG,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 107: break;
           case 33:
-            { verificarIdentacion(yytext());return new Symbol(Sym.DOBIGUAL,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.DOBIGUAL,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 108: break;
           case 34:
-            { verificarIdentacion(yytext());return new Symbol(Sym.MAYIG,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.MAYIG,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 109: break;
           case 35:
-            { verificarIdentacion(yytext());return new Symbol(Sym.COMENT,yyline+1,yycolumn+1, yytext());
+            { /* return new Symbol(Sym.COMENT,yyline+1,yycolumn+1, yytext()); */
             }
             // fall through
           case 110: break;
           case 36:
-            { verificarIdentacion(yytext());return new Symbol(Sym.NOTA,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.NOTA,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 111: break;
           case 37:
-            { verificarIdentacion(yytext());return new Symbol(Sym.SI,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.SI,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 112: break;
           case 38:
-            { verificarIdentacion(yytext());return new Symbol(Sym.OR,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.OR,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 113: break;
           case 39:
-            { verificarIdentacion(yytext());return new Symbol(Sym.NAND,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.NAND,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 114: break;
           case 40:
-            { verificarIdentacion(yytext());return new Symbol(Sym.NOR,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.NOR,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 115: break;
           case 41:
-            { verificarIdentacion(yytext());return new Symbol(Sym.CARACTER,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.CARACTER,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 116: break;
           case 42:
-            { verificarIdentacion(yytext());return new Symbol(Sym.VAR,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.VAR,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 117: break;
           case 43:
-            { verificarIdentacion(yytext());return new Symbol(Sym.CASO,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.CASO,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 118: break;
           case 44:
-            { verificarIdentacion(yytext());return new Symbol(Sym.KEEP,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.KEEP,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 119: break;
           case 45:
-            { verificarIdentacion(yytext());return new Symbol(Sym.PARA,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.PARA,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 120: break;
           case 46:
-            { verificarIdentacion(yytext());return new Symbol(Sym.SINO,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.SINO,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 121: break;
           case 47:
-            { verificarIdentacion(yytext());return new Symbol(Sym.VERDADERO,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.VERDADERO,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 122: break;
           case 48:
-            { verificarIdentacion(yytext());return new Symbol(Sym.DOBLESTR,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.DOBLESTR,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 123: break;
           case 49:
-            { verificarIdentacion(yytext());return new Symbol(Sym.FALSO,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.FALSO,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 124: break;
           case 50:
-            { verificarIdentacion(yytext());return new Symbol(Sym.HACER,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.HACER,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 125: break;
           case 51:
-            { verificarIdentacion(yytext());return new Symbol(Sym.LISTA,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.LISTA,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 126: break;
           case 52:
-            { verificarIdentacion(yytext());return new Symbol(Sym.PISTA,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.PISTA,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 127: break;
           case 53:
-            { verificarIdentacion(yytext());return new Symbol(Sym.SALIR,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.SALIR,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 128: break;
           case 54:
-            { verificarIdentacion(yytext());return new Symbol(Sym.CADENASTR,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.CADENASTR,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 129: break;
           case 55:
-            { verificarIdentacion(yytext());return new Symbol(Sym.ENTEROSTR,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.ENTEROSTR,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 130: break;
           case 56:
-            { verificarIdentacion(yytext());return new Symbol(Sym.NOMBRE,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.NOMBRE,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 131: break;
           case 57:
-            { verificarIdentacion(yytext());return new Symbol(Sym.PISTAS,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.PISTAS,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 132: break;
           case 58:
-            { verificarIdentacion(yytext());return new Symbol(Sym.RANDOM,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.RANDOM,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 133: break;
           case 59:
-            { verificarIdentacion(yytext());return new Symbol(Sym.SWITCH,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.SWITCH,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 134: break;
           case 60:
-            { verificarIdentacion(yytext());return new Symbol(Sym.ARREGLO,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.ARREGLO,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 135: break;
           case 61:
-            { verificarIdentacion(yytext());return new Symbol(Sym.BOOLEANSTR,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.BOOLEANSTR,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 136: break;
           case 62:
-            { verificarIdentacion(yytext());return new Symbol(Sym.DEFAULT,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.DEFAULT,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 137: break;
           case 63:
-            { verificarIdentacion(yytext());return new Symbol(Sym.ESPERAR,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.ESPERAR,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 138: break;
           case 64:
-            { verificarIdentacion(yytext());return new Symbol(Sym.MENSAJE,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.MENSAJE,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 139: break;
           case 65:
-            { verificarIdentacion(yytext());return new Symbol(Sym.RETORNA,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.RETORNA,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 140: break;
           case 66:
-            { verificarIdentacion(yytext());return new Symbol(Sym.SINOSI,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.SINOSI,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 141: break;
           case 67:
-            { verificarIdentacion(yytext());return new Symbol(Sym.CARACTERSTR,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.CARACTERSTR,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 142: break;
           case 68:
-            { verificarIdentacion(yytext());return new Symbol(Sym.CIRCULAR,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.CIRCULAR,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 143: break;
           case 69:
-            { verificarIdentacion(yytext());return new Symbol(Sym.EXTIENDE,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.EXTIENDE,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 144: break;
           case 70:
-            { verificarIdentacion(yytext());return new Symbol(Sym.LONGITUD,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.LONGITUD,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 145: break;
           case 71:
-            { verificarIdentacion(yytext());return new Symbol(Sym.MIENTRAS,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.MIENTRAS,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 146: break;
           case 72:
-            { verificarIdentacion(yytext());return new Symbol(Sym.CONTINUAR,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.CONTINUAR,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 147: break;
           case 73:
-            { verificarIdentacion(yytext());return new Symbol(Sym.PRINCIPAL,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.PRINCIPAL,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 148: break;
           case 74:
-            { verificarIdentacion(yytext());return new Symbol(Sym.SUMARIZAR,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.SUMARIZAR,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 149: break;
           case 75:
-            { verificarIdentacion(yytext());return new Symbol(Sym.REPRODUCIR,yyline+1,yycolumn+1, yytext());
+            { return new Symbol(Sym.REPRODUCIR,yyline+1,yycolumn+1, yytext());
             }
             // fall through
           case 150: break;

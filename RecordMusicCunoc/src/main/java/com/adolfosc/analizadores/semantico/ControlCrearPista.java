@@ -282,6 +282,10 @@ public class ControlCrearPista {
 
     private int parseStringToInt(String val) {
         int valR = 0;
+        if (val.isBlank() || val.equals("nulo")) {
+            System.out.println("error semantico: la variable no existe  o no esta inizializado");
+           return 0; 
+        }
         Double valD = Double.parseDouble(val);
         valR = (int) Math.round(valD);
         return valR;

@@ -11,16 +11,16 @@ public class Sym {
   public static final int LISTA = 25;
   public static final int CONTINUAR = 17;
   public static final int MENSAJE = 23;
-  public static final int VERDADERO = 73;
+  public static final int VERDADERO = 72;
   public static final int DIVI = 42;
   public static final int SI = 7;
   public static final int MAYIG = 47;
   public static final int KEEP = 4;
   public static final int BOOLEANSTR = 33;
   public static final int RANDOM = 27;
-  public static final int FALSO = 74;
+  public static final int FALSO = 73;
   public static final int CARACTERSTR = 34;
-  public static final int NUMERO = 72;
+  public static final int NUMERO = 71;
   public static final int PISTAS = 29;
   public static final int OPELV = 44;
   public static final int PISTA = 2;
@@ -45,7 +45,7 @@ public class Sym {
   public static final int SWITCH = 10;
   public static final int MAY = 50;
   public static final int MULT = 41;
-  public static final int NOTA = 75;
+  public static final int NOTA = 74;
   public static final int DIFERENC = 46;
   public static final int OPMOD = 43;
   public static final int MENIG = 48;
@@ -56,15 +56,14 @@ public class Sym {
   public static final int SUMA = 39;
   public static final int OPSUMSIM = 38;
   public static final int SUMARIZAR = 21;
-  public static final int CARACTER = 71;
+  public static final int CARACTER = 70;
   public static final int CADENASTR = 35;
   public static final int PRINCIPAL = 24;
   public static final int OR = 56;
-  public static final int IDENT = 68;
   public static final int error = 1;
   public static final int REPRODUCIR = 19;
   public static final int RESTA = 40;
-  public static final int ID = 69;
+  public static final int ID = 68;
   public static final int DOBLESTR = 32;
   public static final int SINO = 8;
   public static final int EXTIENDE = 3;
@@ -75,7 +74,7 @@ public class Sym {
   public static final int DOSPUNT = 64;
   public static final int RETORNA = 18;
   public static final int SINOSI = 9;
-  public static final int CADENA = 70;
+  public static final int CADENA = 69;
   public static final int PUNTCOMA = 65;
   public static final int AND = 55;
   public static final int BRACKI = 60;
@@ -153,7 +152,6 @@ public class Sym {
   "PUNTCOMA",
   "COMA",
   "IGUAL",
-  "IDENT",
   "ID",
   "CADENA",
   "CARACTER",

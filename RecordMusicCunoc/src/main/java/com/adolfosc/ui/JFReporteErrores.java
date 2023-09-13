@@ -37,7 +37,7 @@ public class JFReporteErrores extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        jLabel1.setText("Reporte de Errores de Compilacion GCIC");
+        jLabel1.setText("Reporte de Errores de Compilacion");
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {

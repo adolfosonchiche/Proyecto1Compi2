@@ -16,5 +16,7 @@
     <string name="hint_select_pista">Escribe nombre de una pista</string>
     <string name="desctiption">boton</string>
     <string name="desctiption1">boton</string>
+    <string name="txtIp">Escribe la ip del servidor</string>
+    <string name="btnIp">Guardar ip</string>
 
 </resources>

@@ -5,10 +5,12 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.ui.AppBarConfiguration
 import com.adolfosc.conexion_socket.Cliente
 import com.adolfosc.recordmusic.databinding.ActivityMainBinding
+import com.google.android.material.snackbar.Snackbar
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -20,8 +22,9 @@ class MainActivity : AppCompatActivity(), Runnable {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
     private var cliente : Cliente?  = null
-
-    private val host = "192.168.1.115" //IP DE LA COMPUTADORA O SERVIDOR 192.168.1.115
+    private var etIp: EditText? = null
+    public var host = "192.168.1.115" //IP DE LA COMPUTADORA O SERVIDOR 192.168.1.115
+  //  val hostPss = "123.23.232.2"
     private val port = 5000
     private var thread: Thread? = null
     private var inp: DataInputStream? = null
@@ -57,8 +60,6 @@ class MainActivity : AppCompatActivity(), Runnable {
 
 
     fun conectar(view: View?) {
-
-
        /* this.cliente = Cliente()
         CoroutineScope(Dispatchers.IO).launch {
             var mensajeRecivid = cliente!!.run(valorEnviar)
@@ -66,7 +67,19 @@ class MainActivity : AppCompatActivity(), Runnable {
         }*/
         thread =  Thread(this);
         this.thread?.start()
+    }
 
+    fun guardarIp(view: View?) {
+        this.etIp = findViewById(R.id.edTextIp)
+        var textoEntrada = this.etIp!!.text.toString()
+        if (textoEntrada == null || textoEntrada.isEmpty()) {
+            if (view != null) {
+                Snackbar.make(view, "Tienes que escribir la ip del servidor para continuar", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show()
+            }
+        } else {
+            this.host = textoEntrada;
+        }
 
     }
 
@@ -103,6 +116,7 @@ class MainActivity : AppCompatActivity(), Runnable {
 
             val intent = Intent(this, ActivityPlayList::class.java)
             intent.putExtra("mensaje", mensajeRe)
+            intent.putExtra("host", this.host)
             //finish()
             startActivity(intent)
         } catch (e: IOException) {
